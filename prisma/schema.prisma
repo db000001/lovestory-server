@@ -1,0 +1,776 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                          Int              @id @default(autoincrement())
+  firstName                   String           @map("first_name") @db.VarChar(100)
+  middleName                  String?          @map("middle_name") @db.VarChar(100)
+  lastName                    String           @map("last_name") @db.VarChar(100)
+  email                       String           @unique @db.VarChar(100)
+  personalEmail               String?          @unique @map("personal_email") @db.VarChar(100)
+  birthday                    DateTime?        @db.Timestamp(0)
+  sex                         user_tbl_sex?
+  avatar                      String?          @db.VarChar(255)
+  discussionAvatar            String?          @map("discussion_avatar") @db.VarChar(255)
+  summary                     String?          @db.Text
+  college                     String?          @db.VarChar(100)
+  status                      user_tbl_status? @default(active)
+  password                    String           @db.VarChar(255)
+  role                        roles?           @default(user)
+  joinedAt                    DateTime?        @default(now()) @map("joined_at") @db.Timestamp(0)
+  createdAt                   DateTime?        @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt                   DateTime?        @updatedAt @map("updated_at") @db.Timestamp(0)
+  emailVerified               Boolean?         @default(false) @map("email_verified")
+  verificationToken           String?          @unique @map("verification_token") @db.VarChar(255)
+  verificationTokenExpiration DateTime?        @map("verification_token_expiration") @db.Timestamp(0)
+  resetPwdToken               String?          @unique @map("reset_pwd_token") @db.VarChar(255)
+  resetPwdTokenExpiration     DateTime?        @map("reset_pwd_token_expiration") @db.Timestamp(0)
+  refreshToken                String?          @map("refresh_token") @db.VarChar(255)
+  postStatus                  user_status?     @default(on) @map("post_status")
+  chatStatus                  user_status?     @default(on) @map("chat_status")
+  matchStatus                 user_status?     @default(on) @map("match_status")
+  editStatus                  user_status?     @default(on) @map("edit_status")
+  depositStatus               user_status?     @default(on) @map("deposit_status")
+  withdrawStatus              user_status?     @default(on) @map("withdraw_status")
+  logoutStatus                user_status?     @default(on) @map("logout_status")
+  balance                     Float            @default(0.00)
+  premiumEndsAt               DateTime?        @map("premium_ends_at") @db.Timestamp(0)
+  premiumName                 String?          @map("premium_name") @db.VarChar(255)
+  paymentMethodId             String?          @map("payment_method_id")
+
+  @@map("users_tbl")
+}
+
+model UserSession {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      @map("user_id")
+  session     String?   @db.VarChar(255)
+  timezone    String?   @db.VarChar(255)
+  ipv4        String?   @db.VarChar(255)
+  ipv6        String?   @db.VarChar(255)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  loggedoutAt DateTime? @map("loggedout_at") @db.Timestamp(0)
+
+  @@map("user_sessions_tbl")
+}
+
+model UserStatusAction {
+  id           Int       @id @default(autoincrement())
+  userId       Int?      @map("user_id")
+  statusAction String?   @map("status_action") @db.VarChar(255)
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@map("user_status_action_tbl")
+}
+
+model UserTransactions {
+  id               Int       @id @default(autoincrement())
+  userId           Int?      @map("user_id")
+  revenueId        Int?      @map("revenue_id")
+  paymentIntentId  String?   @map("payment_intent_id") @db.VarChar(255)
+  paymentMethod    String?   @map("payment_method") @db.VarChar(255)
+  amount           Int?
+  description      String?   @db.VarChar(255)
+  informationItems String?   @map("information_items") @db.VarChar(255)
+  status           String?   @db.VarChar(255)
+  createdAt        DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@map("user_transactions_tbl")
+}
+
+model UserWithdrawRequests {
+  id              Int       @id @default(autoincrement())
+  userId          Int?      @map("user_id")
+  paypalEmail     String?   @map("paypal_email") @db.VarChar(255)
+  venmoUsername   String?   @map("venmo_username") @db.VarChar(255)
+  cashAppUsername String?   @map("cash_app_username") @db.VarChar(255)
+  amount          Int?
+  address         String?   @db.VarChar(255)
+  city            String?   @db.VarChar(255)
+  state           String?   @db.VarChar(255)
+  zipCode         Int?      @map("zip_code")
+  status          String?   @default("pending") @db.VarChar(255)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@map("user_withdraw_requests_tbl")
+}
+
+model UserFilters {
+  id                   Int     @id @default(autoincrement())
+  userId               Int?    @unique @map("user_id")
+  firstName            String? @map("first_name") @db.VarChar(255)
+  middleName           String? @map("middle_name") @db.VarChar(255)
+  lastName             String? @map("last_name") @db.VarChar(255)
+  age                  String? @db.VarChar(255)
+  sex                  String? @db.VarChar(255)
+  eyeColor             String? @map("eye_color") @db.VarChar(255)
+  currentHairColor     String? @map("current_hair_color") @db.VarChar(255)
+  naturalHairColor     String? @map("natural_hair_color") @db.VarChar(255)
+  height               String? @db.VarChar(255)
+  weight               String? @db.VarChar(255)
+  bodyType             String? @map("body_type") @db.VarChar(255)
+  religiousAffiliation String? @map("religious_affiliation") @db.VarChar(255)
+  ethnicity            String? @db.VarChar(255)
+  ethnicSubgroup       String? @map("ethnic_subgroup") @db.VarChar(255)
+  currentCollege       String? @map("current_college") @db.VarChar(255)
+  currentState         String? @map("current_state") @db.VarChar(255)
+  homeState            String? @map("home_state") @db.VarChar(255)
+  politicalViews       String? @map("political_views") @db.VarChar(255)
+  typeOfRelationship   String? @map("type_of_relationship") @db.VarChar(255)
+  numberOfChildren     String? @map("number_of_children") @db.VarChar(255)
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("user_filters_tbl")
+}
+
+model UserQA {
+  id     Int      @id @default(autoincrement())
+  userId Int?     @map("user_id")
+  answer String?  @db.Text
+  qIndex Int?     @map("q_index")
+  sIndex Int?     @map("s_index")
+  pIndex Int?     @map("p_index")
+  gIndex Int?     @map("g_index")
+  toggle Boolean? @default(true)
+
+  @@map("user_qa_tbl")
+}
+
+model UsersView {
+  id         Int           @id @default(autoincrement())
+  firstName  String        @map("first_name")
+  lastName   String        @map("last_name")
+  college    String?
+  sex        user_tbl_sex?
+  lastActive String?       @map("last_active")
+  joinedAt   DateTime?     @map("joined_at")
+
+  matches  Int?
+  accepted Int?
+  revenue  Int?
+  share    Int?
+
+  @@map("users_view")
+}
+
+model UserStatisticsView {
+  uuid                     String @id
+  totalUsers               Int    @map("total_users")
+  dailyActiveUsers         Int    @default(0) @map("daily_active_users")
+  monthlyActiveUsers       Int    @default(0) @map("monthly_active_users")
+  paidUsers                Int    @default(0) @map("paid_users")
+  freeUsers                Int    @default(0) @map("free_users")
+  totalMaleUsers           Int    @map("total_male_users")
+  maleDailyActiveUsers     Int    @default(0) @map("male_daily_active_users")
+  maleMonthlyActiveUsers   Int    @default(0) @map("male_monthly_active_users")
+  malePaidUsers            Int    @default(0) @map("male_paid_users")
+  maleFreeUsers            Int    @default(0) @map("male_free_users")
+  totalFemaleUsers         Int    @map("total_female_users")
+  femaleDailyActiveUsers   Int    @default(0) @map("female_daily_active_users")
+  femaleMonthlyActiveUsers Int    @default(0) @map("female_monthly_active_users")
+  femalePaidUsers          Int    @default(0) @map("female_paid_users")
+  femaleFreeUsers          Int    @default(0) @map("female_free_users")
+
+  @@map("user_statistics_view")
+}
+
+model UserNotification {
+  id                           Int      @id @default(autoincrement())
+  userId                       Int?     @unique @map("user_id")
+  chatNotificationStatus       Boolean? @default(true) @map("chat_notification_status")
+  discussionNotificationStatus Boolean? @default(true) @map("discussion_notification_status")
+
+  @@map("user_notification_tbl")
+}
+
+model UserChatNotification {
+  id     Int      @id @default(autoincrement())
+  userId Int?     @map("user_id")
+  chatId Int?     @map("chat_id")
+  status Boolean? @default(true)
+
+  @@unique([userId, chatId])
+  @@map("user_chat_notification_tbl")
+}
+
+model QuestionType {
+  id   Int     @id @default(autoincrement())
+  name String? @db.VarChar(255)
+
+  @@map("question_types_tbl")
+}
+
+model QuestionPrices {
+  id    Int     @id @default(autoincrement())
+  name  String? @db.VarChar(255)
+  price Float?
+
+  @@map("question_prices_tbl")
+}
+
+model QuestionValue {
+  id         Int     @id @default(autoincrement())
+  questionId Int?    @map("question_id")
+  prefix     String? @db.VarChar(255)
+  value      String? @db.VarChar(255)
+
+  @@map("question_values_tbl")
+}
+
+model College {
+  id          Int    @id @default(autoincrement())
+  emailDomain String @unique @map("email_domain") @db.VarChar(255)
+  college     String @unique @db.VarChar(100)
+
+  @@map("colleges_tbl")
+}
+
+model CollegesView {
+  id       Int     @id @default(autoincrement())
+  college  String?
+  users    Int?
+  active   Int?
+  paid     Int?
+  free     Int?
+  male     Int?
+  female   Int?
+  matches  Int?
+  accepted Int?
+  revenue  Int?
+  share    Int?
+
+  @@map("colleges_view")
+}
+
+model CollegeUsersView {
+  uuid       String        @id
+  userId     Int?          @map("user_id")
+  fullName   String?       @map("full_name")
+  college    String?
+  collegeId  Int?          @map("college_id")
+  sex        user_tbl_sex?
+  joinedAt   DateTime?     @default(now()) @map("joined_at")
+  lastActive String?       @default("") @map("last_active")
+  matches    Int?
+  accepted   Int?
+  revenue    Int?
+  share      Int?
+
+  @@map("college_users_view")
+}
+
+model Ads {
+  id          Int             @id @default(autoincrement()) @db.UnsignedInt
+  title       String?         @db.VarChar(255)
+  company     String?         @db.VarChar(100)
+  description String?         @db.Text
+  tag1        String?         @db.VarChar(100)
+  tag2        String?         @db.VarChar(100)
+  tag3        String?         @db.VarChar(100)
+  start       DateTime?       @db.Date
+  end         DateTime?       @db.Date
+  file        String?         @db.VarChar(255)
+  status      ads_tbl_status?
+
+  @@map("ads_tbl")
+}
+
+model Category {
+  id            Int                  @id @default(autoincrement())
+  name          String               @unique @db.VarChar(100)
+  description   String?              @db.VarChar(255)
+  row           String?              @db.VarChar(100)
+  categoryOrder Int                  @map("category_order")
+  fileId        Int?                 @map("file_id")
+  status        category_tbl_status? @default(active)
+  views         Int?
+  createdAt     DateTime?            @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt     DateTime?            @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("categories_tbl")
+}
+
+model UserFavoCategory {
+  id         Int  @id @default(autoincrement())
+  userId     Int? @map("user_id")
+  categoryId Int? @map("category_id")
+
+  @@map("user_favo_categories_tbl")
+}
+
+model CategoriesView {
+  id            Int     @id @default(autoincrement())
+  name          String
+  description   String?
+  categoryOrder Int?    @map("category_order")
+
+  views    Int?
+  likes    Int?
+  comments Int?
+  created  DateTime?
+
+  @@map("categories_view")
+}
+
+model CategoryVisibility {
+  id                  Int                  @id @default(autoincrement())
+  categoryId          Int?                 @map("category_id")
+  visibilityValue     String?              @map("visibility_value") @db.VarChar(50)
+  visibilityValueType Int?                 @map("visibility_value_type")
+  status              category_tbl_status?
+
+  @@map("category_visibility_tbl")
+}
+
+model CollectionCategory {
+  id           Int  @id @default(autoincrement())
+  collectionId Int? @map("collection_id")
+  categoryId   Int? @map("category_id")
+
+  @@map("collection_category_tbl")
+}
+
+model Collection {
+  id              Int                    @id @default(autoincrement())
+  name            String?                @unique @db.VarChar(100)
+  collectionOrder Int?                   @unique @map("collection_order")
+  description     String?                @db.VarChar(255)
+  status          collection_tbl_status? @default(active)
+  fileId          Int?                   @map("file_id")
+  createdAt       DateTime?              @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt       DateTime?              @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("collections_tbl")
+}
+
+model CollectionsView {
+  id              Int     @id @default(autoincrement())
+  name            String?
+  description     String?
+  collectionOrder Int?    @map("collection_order")
+
+  views    Int?
+  likes    Int?
+  comments Int?
+  created  DateTime? @db.Timestamp(0)
+
+  @@map("collections_view")
+}
+
+model CollectionVisibility {
+  id                  Int                    @id @default(autoincrement())
+  collectionId        Int?                   @map("collection_id")
+  visibilityValue     String?                @map("visibility_value") @db.VarChar(50)
+  visibilityValueType Int?                   @map("visibility_value_type")
+  status              collection_tbl_status? @default(active)
+
+  @@map("collection_visibility_tbl")
+}
+
+model Emotion {
+  id     Int     @id @default(autoincrement())
+  symbol String? @db.VarChar(50)
+
+  @@map("emotions_tbl")
+}
+
+model File {
+  id        Int               @id @default(autoincrement())
+  fileUrl   String?           @map("file_url") @db.VarChar(255)
+  bytes     Int?
+  userId    Int?              @map("user_id")
+  status    files_tbl_status?
+  createdAt DateTime?         @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime?         @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("files_tbl")
+}
+
+model Match {
+  id                  Int           @id @default(autoincrement())
+  email1              String?       @db.VarChar(100)
+  email1Status        match_status? @map("email1_status")
+  email2              String?       @db.VarChar(100)
+  email2Status        match_status? @map("email2_status")
+  score               Int?
+  createdAt           DateTime?     @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt           DateTime?     @updatedAt @map("updated_at") @db.Timestamp(0)
+  expiration          DateTime?     @default(now()) @db.Timestamp(0)
+  expirationEmailSent Boolean?      @default(false) @map("expiration_email_sent")
+
+  @@map("matches_tbl")
+}
+
+model MatchingAction {
+  id             Int              @id @default(autoincrement())
+  user1Id        Int?             @map("user1_id")
+  user2Id        Int?             @map("user2_id")
+  matchingAction matching_action? @map("matching_action")
+  createdAt      DateTime?        @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt      DateTime?        @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("matching_action_tbl")
+}
+
+model MatchesView {
+  id          Int           @id @default(autoincrement())
+  user1Id     Int?          @map("user1_id")
+  user1Name   String?       @map("user1_name") @db.VarChar(100)
+  user1Email  String?       @map("user1_email") @db.VarChar(100)
+  user1Status match_status? @map("user1_status")
+  user2Id     Int?          @map("user2_id")
+  user2Name   String?       @map("user2_name") @db.VarChar(100)
+  user2Email  String?       @map("user2_email") @db.VarChar(100)
+  user2Status match_status? @map("user2_status")
+  score       Int?
+  createdAt   DateTime?     @map("created_at") @db.Timestamp(0)
+
+  @@map("matches_view")
+}
+
+model PaymentDetail {
+  id                 Int                               @id @default(autoincrement())
+  userSubscriptionId Int?                              @map("user_subscription_id")
+  paymentDate        DateTime?                         @default(now()) @map("payment_date") @db.Timestamp(0)
+  amountNumber       Decimal?                          @map("amount_number") @db.Decimal(10, 2)
+  paymentMethod      payment_detail_tbl_payment_method @map("payment_method")
+  transactionId      String                            @map("transaction_id") @db.VarChar(100)
+
+  @@map("payment_details_tbl")
+}
+
+model PostCategory {
+  id         Int  @id @default(autoincrement())
+  postId     Int? @map("post_id")
+  categoryId Int? @map("category_id")
+
+  @@map("post_category_tbl")
+}
+
+model PostEmotion {
+  id        Int       @id @default(autoincrement())
+  postId    Int?      @map("post_id")
+  emotionId Int?      @map("emotion_id")
+  userId    Int?      @map("user_id")
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("post_emotion_tbl")
+}
+
+model PostFile {
+  id     Int  @id @default(autoincrement())
+  postId Int? @map("post_id")
+  fileId Int? @map("file_id")
+
+  @@map("post_file_tbl")
+}
+
+model Post {
+  id          Int                 @id @default(autoincrement())
+  userId      Int?                @map("user_id")
+  postType    post_tbl_post_type? @map("post_type")
+  rating      Float?
+  content     String?             @db.Text
+  status      post_tbl_status?    @default(active)
+  pId         Int?                @map("p_id") @db.UnsignedInt
+  targetId    Int?                @map("target_id") @db.UnsignedInt
+  imageFileId Int?                @map("image_file_id") @db.UnsignedInt
+  createdAt   DateTime?           @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime?           @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("posts_tbl")
+}
+
+model UserPostEmotion {
+  id      Int     @id @default(autoincrement())
+  userId  Int?    @map("user_id")
+  postId  Int?    @map("post_id")
+  emotion String?
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@unique([userId, postId])
+  @@map("user_post_emotion_tbl")
+}
+
+model DiscussionsView {
+  id         Int     @id @default(autoincrement())
+  discussion String
+  category   String?
+  categoryId Int?    @map("category_id")
+  userId     Int?    @map("user_id")
+  user       String?
+
+  replies   Int?
+  reactions Int?
+  pId       Int?      @map("p_id")
+  posted    DateTime?
+
+  @@map("discussions_view")
+}
+
+model ReviewsView {
+  id             Int     @id @default(autoincrement())
+  review         String?
+  reviewerId     Int?    @map("reviewer_id")
+  reviewer       String?
+  reviewerAvatar String? @map("reviewer_avatar")
+  revieweeId     Int?    @map("reviewee_id")
+  reviewee       String?
+
+  rating     Float?
+  responseId Int?             @map("response_id")
+  createdAt  DateTime?        @map("created_at")
+  status     post_tbl_status?
+
+  @@map("reviews_view")
+}
+
+model Property {
+  id          Int                  @id @default(autoincrement())
+  name        String?              @db.VarChar(100)
+  description String?              @db.VarChar(255)
+  price       Decimal?             @db.Decimal(10, 2)
+  status      property_tbl_status?
+  order       Int?
+  categoryId  Int?                 @map("category_id")
+  pId         Int?                 @map("p_id")
+
+  @@map("properties_tbl")
+}
+
+model PropertyValue {
+  id          Int                        @id @default(autoincrement())
+  propertyId  Int?                       @map("property_id")
+  value       String?                    @db.VarChar(255)
+  description String?                    @db.VarChar(255)
+  status      property_value_tbl_status?
+  order       Int?
+
+  @@map("property_values_tbl")
+}
+
+model SubscriptionPlan {
+  id          Int       @id @default(autoincrement())
+  name        String?   @db.VarChar(100)
+  price       Decimal?  @db.Decimal(10, 2)
+  duration    Int?
+  description String?   @db.VarChar(255)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamp(0)
+
+  @@map("subscription_plans_tbl")
+}
+
+model UserPropertyValue {
+  id          Int                             @id @default(autoincrement())
+  userId      Int?                            @map("user_id")
+  propertyId  Int?                            @map("property_id")
+  valueId     Int?                            @map("value_id")
+  description String?                         @db.VarChar(255)
+  status      user_property_value_tbl_status?
+
+  @@map("user_property_value_tbl")
+}
+
+model UserSubscription {
+  id                 Int                           @id @default(autoincrement())
+  userId             Int?                          @map("user_id")
+  subscriptionPlanId Int?                          @map("subscription_plan_id")
+  startDate          DateTime?                     @default(now()) @map("start_date") @db.Timestamp(0)
+  endDate            DateTime?                     @map("end_date") @db.Timestamp(0)
+  status             user_subscription_tbl_status?
+
+  @@map("user_subscription_tbl")
+}
+
+model VideoFile {
+  id      Int               @id @default(autoincrement())
+  videoId Int?              @map("video_id")
+  fileId  Int?              @map("file_id")
+  status  video_tbl_status?
+
+  @@map("video_file_tbl")
+}
+
+model Miscellaneous {
+  id                          Int  @id @default(autoincrement())
+  regularMatchDeadline        Int? @map("regular_match_deadline")
+  subscriberMatchDeadline     Int? @map("subscriber_match_deadline")
+  regularInfoSpendingLimit    Int? @map("regular_info_spending_limit")
+  subscriberInfoSpendingLimit Int? @map("subscriber_info_spending_limit")
+  reigniteCost                Int? @map("reignite_cost")
+
+  @@map("miscellaneous_tbl")
+}
+
+model Video {
+  id           Int               @id @default(autoincrement())
+  title        String?           @db.VarChar(255)
+  collectionId Int?              @map("collection_id")
+  description  String?           @db.Text
+  tag1         String?           @db.VarChar(100)
+  tag2         String?           @db.VarChar(100)
+  tag3         String?           @db.VarChar(100)
+  imageFileId  Int?              @map("image_file_id")
+  videoFileId  Int?              @map("video_file_id")
+  status       video_tbl_status? @default(active)
+  views        Int?
+  likes        Int?
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+  updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
+
+  @@map("videos_tbl")
+}
+
+model UserVideoLikes {
+  id      Int  @id @default(autoincrement())
+  userId  Int? @map("user_id")
+  videoId Int? @map("video_id")
+
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
+
+  @@unique([userId, videoId])
+  @@map("user_video_likes_tbl")
+}
+
+model VideosView {
+  id           Int       @id @default(autoincrement())
+  video        String?   @db.VarChar(255)
+  collectionId Int?      @map("collection_id")
+  collection   String?   @db.VarChar(255)
+  views        Int?
+  likes        Int?
+  comments     Int?
+  posted       DateTime? @db.Timestamp(0)
+
+  @@map("videos_view")
+}
+
+model VideosDetailView {
+  id           Int               @id @default(autoincrement())
+  title        String?           @db.VarChar(255)
+  collectionId Int?              @map("collection_id")
+  collection   String?           @db.VarChar(255)
+  description  String?           @db.VarChar(255)
+  tag1         String?           @db.VarChar(255)
+  tag2         String?           @db.VarChar(255)
+  tag3         String?           @db.VarChar(255)
+  views        Int?
+  likes        Int?
+  comments     Int?
+  imageFileUrl String?           @map("image_file_url") @db.VarChar(255)
+  videoFileUrl String?           @map("video_file_url") @db.VarChar(255)
+  status       video_tbl_status?
+  posted       DateTime?         @db.Timestamp(0)
+
+  @@map("videos_detail_view")
+}
+
+enum post_tbl_post_type {
+  discussion
+  video
+  review
+}
+
+enum category_tbl_status {
+  active
+  inactive
+}
+
+enum video_tbl_status {
+  active
+  inactive
+}
+
+enum payment_detail_tbl_payment_method {
+  credit_card
+  paypal
+  other
+}
+
+enum property_tbl_status {
+  active
+  inactive
+}
+
+enum property_value_tbl_status {
+  active
+  inactive
+}
+
+enum files_tbl_status {
+  uploaded
+  other
+}
+
+enum match_status {
+  accepted
+  pending
+  rejected
+  expired
+}
+
+enum matching_action {
+  accepted
+  rejected
+  reignited
+}
+
+enum post_tbl_status {
+  active
+  inactive
+}
+
+enum user_property_value_tbl_status {
+  active
+  inactive
+}
+
+enum user_subscription_tbl_status {
+  active
+  expired
+  canceled
+}
+
+enum user_tbl_sex {
+  male
+  female
+  intersex
+  other
+}
+
+enum user_tbl_status {
+  active
+  inactive
+}
+
+enum user_status {
+  on
+  off
+}
+
+enum roles {
+  admin
+  user
+}
+
+enum ads_tbl_status {
+  active
+  inactive
+}
+
+enum collection_tbl_status {
+  active
+  inactive
+}
