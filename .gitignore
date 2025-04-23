@@ -1,0 +1,45 @@
+# Node modules  
+node_modules/  
+
+# Environment variables file  
+.env
+
+# Prisma generated files  
+/prisma/schema.prisma  
+/prisma/migrations/  
+
+# Build output  
+dist/  
+build/  
+
+# Logs  
+logs  
+*.log  
+
+# Temporary files  
+tmp/  
+temp/  
+
+# OS generated files  
+.DS_Store  
+Thumbs.db  
+*.swp  
+
+# Coverage directory used by testing tools  
+coverage/  
+
+# IDE or Editor specific files  
+.vscode/  
+.idea/  
+*.sublime-workspace  
+*.sublime-project  
+
+# NPM package lock file (optional)  
+package-lock.json  
+
+# Yarn files (if using Yarn)  
+yarn-error.log  
+yarn-debug.log  
+
+# Miscellaneous  
+npm-debug.log*
