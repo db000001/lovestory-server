@@ -2404,7 +2404,7 @@ export const userQuestionCompletedEmailHTML = (
         } else {
           let answer = "";
           qaItems.forEach((qaItem, index) => {
-            answer += qaItem.answer.replace("#", "; ");
+            answer += qaItem.answer.replaceAll("#", "; ");
             if (index < qaItems.length - 1) {
               answer += "; ";
             }
