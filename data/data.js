@@ -18154,7 +18154,7 @@ const questionnareData = [
           {
             question:
               "What is your women's shoe size <span>(Minimum 1; Maximum 1) (Question disappears if Sex ≠ Female)</span>",
-            questionEmail: "What is your men's shoe size?",
+            questionEmail: "What is your women's shoe size?",
             options: [
               "4",
               "4.5",

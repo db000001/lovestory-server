@@ -2403,14 +2403,53 @@ export const userQuestionCompletedEmailHTML = (
           answers.push("");
         } else {
           let answer = "";
-          qaItems.forEach((qaItem) => {
-            answer += qaItem.answer.replace("#", "") + ", ";
+          qaItems.forEach((qaItem, index) => {
+            answer += qaItem.answer.replace("#", "; ");
+            if (index < qaItems.length) {
+              answer += "; ";
+            }
           });
+          
+          if ((qIdx === 0 && sIdx === 2 && pIdx === 4) || (qIdx === 45 && sIdx === 0 && pIdx === 6)) {
+            const qaItemArray = answer.split("; ");
+            answer = "";
+            qaItemArray.forEach((item, itemIndex) => {
+              // Get the answer and split into type and value  
+              const answerParts = item.split('-');
+              const type = answerParts[0];           // 'm', 'f', or other  
+              const value = answerParts[1];          // option value  
+
+              // Determine which optionGroup to use  
+              let groupIndex;
+              if (type === 'm') groupIndex = 0;
+              else if (type === 'f') groupIndex = 1;
+              else groupIndex = 2;
+
+              // Find index of the value in the right options array  
+              const options = questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups[groupIndex].options;
+              const index = options.indexOf(value) + 1;
+
+              // Set answer as Type + index (uppercase type)  
+              answer += `${type.toUpperCase()}${index}`;
+              if (itemIndex < qaItemArray.length) {
+                answer += "; ";
+              }
+            })  
+          }
           answers.push(answer);
         }
       });
     });
   });
+
+  let answerElements = '';
+  answers.forEach((answer) => {
+    answerElements += `<td>${answer}</td>`
+  });
+  let questionElements = '';
+  questions.forEach((q) => {
+    questionElements += `<td>${q}</td>`
+  })
 
   const userQuestionTable = `
     <style>
@@ -2429,12 +2468,12 @@ export const userQuestionCompletedEmailHTML = (
     <table class="question-table">
       <thead>
         <tr>
-          ${questions.map((q, idx) => `<th>${idx}. ${q}</th>`).join("")}
+          ${questionElements}
         </tr>
       </thead>
       <tbody>
         <tr>
-          ${answers.map((a) => `<td>${a}</td>`).join("")}
+          ${answerElements}
         </tr>
       </tbody>
     </table>

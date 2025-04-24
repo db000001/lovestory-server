@@ -1066,13 +1066,13 @@ export const createUserQA = async (req, res) => {
 
     await sendEmail({
       email: "noreply@lovestory.ai",
-      subject: `${user.email} ${user.firstName} ${user.middleName} ${user.lastName} Registration`,
+      subject: `${user.email} ${updatedData.firstName} ${updatedData.middleName} ${updatedData.lastName} Registration`,
       html: userQuestionCompletedEmailHTML(
         qa,
         user.email,
-        user.firstName,
-        user.middleName,
-        user.lastName
+        updatedData.firstName,
+        updatedData.middleName,
+        updatedData.lastName
       ),
     });
 
