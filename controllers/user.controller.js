@@ -389,7 +389,17 @@ export const getUserById = async (req, res) => {
 
     // Check if payment method exists and is a Mastercard
     if (!paymentMethod || paymentMethod.card.brand !== "mastercard") {
-      return res.status(404).json({ error: "No registered Mastercard found." });
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          paymentMethodId: null,
+        },
+      });
+      return res.status(200).json({
+        ...user,
+        cardBrand: null,
+        cardLast4Number: null,
+      });
     }
 
     res.status(200).json({
