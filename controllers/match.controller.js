@@ -48,26 +48,32 @@ export const createMatches = async (req, res) => {
       });
 
       const today = new Date();
+      const birthday1 = new Date(existingUser1.birthday);
+      const birthday2 = new Date(existingUser2.birthday);
 
       await sendEmail({
-        email: existingUser1.personalEmail ? existingUser1.personalEmail : existingUser1.email,
+        email: existingUser1.personalEmail
+          ? existingUser1.personalEmail
+          : existingUser1.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
           `${existingUser1.firstName} ${existingUser1.lastName}`,
           existingUser1.avatar,
-          today.getFullYear() - existingUser1.birthday.getFullYear(),
+          today.getFullYear() - birthday1.getFullYear(),
           match.score,
           existingUser1.summary
         ),
       });
 
       await sendEmail({
-        email: existingUser2.personalEmail ? existingUser2.personalEmail : existingUser2.email,
+        email: existingUser2.personalEmail
+          ? existingUser2.personalEmail
+          : existingUser2.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
           `${existingUser2.firstName} ${existingUser2.lastName}`,
           existingUser2.avatar,
-          today.getFullYear() - existingUser2.birthday.getFullYear(),
+          today.getFullYear() - birthday2.getFullYear(),
           match.score,
           existingUser2.summary
         ),
@@ -183,6 +189,8 @@ export const getMatchedUsersByUserId = async (req, res) => {
         score: match.score,
         status:
           match.email1 === user.email ? match.email1Status : match.email2Status,
+        email1Status: match.email1Status,
+        email2Status: match.email2Status,
         createdAt: match.createdAt,
         isExpired, // Add the isExpired field to the result
       };
@@ -250,6 +258,8 @@ export const getMatchedUsersByUserId = async (req, res) => {
           ...matchedUser,
           rating, // Attach the average rating to the user object
           status: matchData ? matchData.status : null, // Attach match status
+          email1Status: matchData.email1Status,
+          email2Status: matchData.email2Status,
           score: matchData ? matchData.score : 0, // Attach match score
           matchedAt: matchData ? matchData.createdAt : null, // Attach match createdAt
           review: post?.content,
@@ -350,47 +360,121 @@ export const updateMatchStatus = async (req, res) => {
       });
     }
 
+    const today = new Date();
+    const matchedUserBirthday = new Date(matchedUser.birthday);
+
     if (status === "accepted") {
       if (
         match.email1Status === "accepted" &&
         match.email2Status === "accepted"
       ) {
-        const today = new Date();
-
         await sendEmail({
-          email: matchedUser.personalEmail ? matchedUser.personalEmail : matchedUser.email,
+          email: matchedUser.personalEmail
+            ? matchedUser.personalEmail
+            : matchedUser.email,
           subject: `${matchedUser.firstName} ${matchedUser.lastName} Match Approved`,
           html: approvedMatchEmailHTML(
-            `${matchedUser.firstName} ${matchedUser.lastName}`,
+            matchedUser.firstName,
             matchedUser.avatar,
-            today.getFullYear() - matchedUser.birthday.getFullYear(),
+            today.getFullYear() - matchedUserBirthday.getFullYear(),
             match.score,
             matchedUser.summary
           ),
         });
       }
     } else if (status === "rejected") {
-      const today = new Date();
       await sendEmail({
-        email: matchedUser.personalEmail ? matchedUser.personalEmail : matchedUser.email,
+        email: matchedUser.personalEmail
+          ? matchedUser.personalEmail
+          : matchedUser.email,
         subject: `${matchedUser.firstName} ${matchedUser.lastName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
           `${matchedUser.firstName} ${matchedUser.lastName}`,
           matchedUser.avatar,
-          today.getFullYear() - matchedUser.birthday.getFullYear(),
+          today.getFullYear() - matchedUserBirthday.getFullYear(),
           match.score
         ),
       });
     } else if (status === "reignited") {
-      const today = new Date();
+      const reigniteCost = await prisma.miscellaneous.findUnique({
+        where: { id: 1 },
+        select: { reigniteCost: true },
+      });
+      const amountToReduce = user.balance < reigniteCost ? user.balance : reigniteCost;
+      const amountToMakeExtraPayment =
+        user.balance < reigniteCost ? reigniteCost - user.balance : 0;
+
+      // Decrease the user's balance
+      const updatedUser = await prisma.user.update({
+        where: { id: user.id },
+        data: { balance: user.balance - amountToReduce },
+      });
+
+      // Save transaction to your database
+      await prisma.userTransactions.create({
+        data: {
+          userId: user.id,
+          paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
+          amount: Math.round(amountToReduce * 100),
+          paymentMethod: "Balance",
+          description,
+          status: "succeeded", // e.g., 'succeeded'
+        },
+      });
+
+      // If there's extra payment needed, create a PaymentIntent
+      if (amountToMakeExtraPayment > 0) {
+        const customers = await stripe.customers.list({ limit: 1000 });
+        const customer = customers.data.find(
+          (c) => Number(c.metadata.userId) === user.id
+        );
+
+        if (!customer) {
+          return res
+            .status(404)
+            .json({
+              error: "You must add a payment method before checking out.",
+            });
+        }
+
+        // Create a PaymentIntent using the customer's default payment method
+        const paymentIntent = await stripe.paymentIntents.create({
+          amount: Math.round(amountToMakeExtraPayment * 100), // Amount in cents
+          currency: "usd",
+          customer: customer.id,
+          payment_method: user.paymentMethodId,
+          confirm: true, // Automatically confirm the payment
+          automatic_payment_methods: {
+            enabled: true,
+            allow_redirects: "never",
+          },
+          metadata: {
+            description: description, // Add description here
+          },
+        });
+
+        // Save transaction to your database
+        await prisma.userTransactions.create({
+          data: {
+            userId: user.id,
+            paymentIntentId: paymentIntent.id,
+            paymentMethod: "Stripe",
+            amount: paymentIntent.amount,
+            description: paymentIntent.metadata.description,
+            status: paymentIntent.status, // e.g., 'succeeded'
+          },
+        });
+      }
       await sendEmail({
-        email: matchedUser.personalEmail ? matchedUser.personalEmail : matchedUser.email,
-        subject: `Reignite ${matchedUser.firstName} ${
-          matchedUser.lastName
-        } ${today.getFullYear() - matchedUser.birthday.getFullYear()}`,
+        email: matchedUser.personalEmail
+          ? matchedUser.personalEmail
+          : matchedUser.email,
+        subject: `Reignite ${matchedUser.firstName} ${matchedUser.lastName} ${
+          today.getFullYear() - matchedUserBirthday.getFullYear()
+        }`,
         html: reigniteMatchEmailHTML(
           `${matchedUser.firstName} ${matchedUser.lastName}`,
-          today.getFullYear() - matchedUser.birthday.getFullYear()
+          today.getFullYear() - matchedUserBirthday.getFullYear()
         ),
       });
     }
@@ -642,24 +726,31 @@ cron.schedule("0 * * * *", async () => {
       });
 
       const today = new Date();
+      const user1Birthday = new Date(existingUser1.birthday);
+      const user2Birthday = new Date(existingUser2.birthday);
+
       await sendEmail({
-        email: existingUser1.personalEmail ? existingUser1.personalEmail : existingUser1.email,
+        email: existingUser1.personalEmail
+          ? existingUser1.personalEmail
+          : existingUser1.email,
         subject: `${existingUser1.firstName} ${existingUser1.lastName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
           `${existingUser1.firstName} ${existingUser1.lastName}`,
           existingUser1.avatar,
-          today.getFullYear() - existingUser1.birthday.getFullYear(),
+          today.getFullYear() - user1Birthday.getFullYear(),
           match.score
         ),
       });
 
       await sendEmail({
-        email: existingUser2.personalEmail ? existingUser2.personalEmail : existingUser2.email,
+        email: existingUser2.personalEmail
+          ? existingUser2.personalEmail
+          : existingUser2.email,
         subject: `${existingUser2.firstName} ${existingUser2.lastName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
           `${existingUser2.firstName} ${existingUser2.lastName}`,
           existingUser2.avatar,
-          today.getFullYear() - existingUser2.birthday.getFullYear(),
+          today.getFullYear() - user2Birthday.getFullYear(),
           match.score
         ),
       });

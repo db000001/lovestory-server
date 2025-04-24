@@ -58,7 +58,7 @@ export const createUser = async (req, res) => {
         lastName,
         email,
         password: hashedNewPassword,
-        birthday: new Date(birthday),
+        birthday,
         sex,
         avatar,
         college: college.college, // Set the college field to the college name
@@ -74,7 +74,11 @@ export const createUser = async (req, res) => {
 // Get all users
 export const getAllUsers = async (req, res) => {
   try {
-    const users = await prisma.user.findMany();
+    const users = await prisma.user.findMany({
+      where: {
+        sex: { not: null },
+      },
+    });
     res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch users" });
@@ -223,6 +227,9 @@ export const getUsersView = async (req, res) => {
       where: {
         role: {
           not: "admin",
+        },
+        sex: {
+          not: null,
         },
       },
       select: {
@@ -423,6 +430,7 @@ export const getMatchedUserById = async (req, res) => {
         depositStatus: true,
         withdrawStatus: true,
         logoutStatus: true,
+        premiumEndsAt: true,
       },
     });
 
@@ -455,12 +463,37 @@ export const getMatchedUserById = async (req, res) => {
       return res.status(404).json({ error: "Match not found" });
     }
 
+    const miscellaneous = await prisma.miscellaneous.findUnique({
+      where: {
+        id: 1,
+      },
+    });
+    const today = new Date();
+    let matchExpiration = match.createdAt;
+
+    if (user.premiumEndsAt !== null && user.premiumEndsAt > today) {
+      matchExpiration.setDate(
+        matchExpiration.getDate() +
+          Number(miscellaneous.subscriberMatchDeadline)
+      );
+      // Combine user data with match data
+      return res.status(200).json({
+        user,
+        match: {
+          ...match,
+          expTimeLeft: matchExpiration - new Date(),
+        },
+      });
+    }
+    matchExpiration.setDate(
+      matchExpiration.getDate() + Number(miscellaneous.regularMatchDeadline)
+    );
     // Combine user data with match data
-    res.status(200).json({
+    return res.status(200).json({
       user,
       match: {
         ...match,
-        expTimeLeft: match.expiration - new Date(),
+        expTimeLeft: matchExpiration - new Date(),
       },
     });
   } catch (error) {
@@ -506,17 +539,6 @@ export const updateUser = async (req, res) => {
       user.password = hashedNewPassword; // Update password
     }
 
-    // Convert the birthday to ISO format if it's provided
-    let formattedBirthday = null;
-    if (birthday) {
-      formattedBirthday = new Date(birthday);
-      if (isNaN(formattedBirthday.getTime())) {
-        return res
-          .status(400)
-          .json({ message: "Invalid date format for birthday" });
-      }
-    }
-
     // Update other fields
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(userId) },
@@ -525,7 +547,7 @@ export const updateUser = async (req, res) => {
         lastName,
         email,
         personalEmail,
-        birthday: formattedBirthday,
+        birthday,
         avatar,
         discussionAvatar,
         password: user.password, // Ensure the new password is included if updated
@@ -1005,7 +1027,7 @@ export const createUserQA = async (req, res) => {
           updatedData.middleName = data.answer; // Use user's middleName
         }
       } else if (data.qIndex === 0 && data.sIndex === 1 && data.pIndex === 0) {
-        updatedData.birthday = new Date(data.answer); // Use user's birthday
+        updatedData.birthday = data.answer; // Use user's birthday
       } else if (data.qIndex === 0 && data.sIndex === 2 && data.pIndex === 0) {
         updatedData.sex = data.answer.toLowerCase(); // Use user's sex
       }
@@ -1144,7 +1166,7 @@ export const updateUserQA = async (req, res) => {
       } else if (data.qIndex === 0 && data.sIndex === 1 && data.pIndex === 0) {
         updatedData.birthday = new Date(data.answer); // Use user's birthday
       } else if (data.qIndex === 0 && data.sIndex === 2 && data.pIndex === 0) {
-        updatedData.sex = data.answer.toLowerCase(); // Use user's birthday
+        updatedData.sex = data.answer.toLowerCase(); // Use user's sex
       }
     });
 
@@ -1183,11 +1205,8 @@ export const updateUserQA = async (req, res) => {
       await sendEmail({
         email: user.personalEmail ? user.personalEmail : user.email,
         subject: `Information Change Purchase`,
-        html: informationUpdateEmailHTML(
-          qa,
-          shopItems,
-        ),
-      }); 
+        html: informationUpdateEmailHTML(qa, shopItems),
+      });
     }
 
     // Respond with the access token and user details
@@ -1221,6 +1240,36 @@ export const getUserQAByUserId = async (req, res) => {
     res.status(200).json(userQA);
   } catch (error) {
     console.error("Error fetching UserQA by ID:", error);
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Update the toggle field of a UserQA record by userID
+export const updateUserQAToggleByUserId = async (req, res) => {
+  const { qIndex, sIndex, pIndex, toggle } = req.body;
+  try {
+    const userId = parseInt(req.params.userId);
+
+    console.log(userId, qIndex, sIndex, pIndex, toggle);
+
+    const updated = await prisma.userQA.updateMany({
+      where: {
+        userId: userId,
+        qIndex: Number(qIndex),
+        sIndex: Number(sIndex),
+        pIndex: Number(pIndex),
+      },
+      data: {
+        toggle: toggle,
+      },
+    });
+
+    res.status(200).json({
+      message: `${updated.count} record(s) updated.`,
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error updating UserQA toggle:", error);
     res.status(500).json({ error: error.message });
   }
 };

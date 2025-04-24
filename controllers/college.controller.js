@@ -58,7 +58,7 @@ export const getCollegesView = async (req, res) => {
 
         // Total users count for the college
         const userCount = await prisma.user.count({
-          where: { college: college.college },
+          where: { college: college.college, sex: { not: null } },
         });
 
         // Active users count (at least one login session)
@@ -116,7 +116,12 @@ export const getCollegesView = async (req, res) => {
 
         // Gender statistics
         const users = await prisma.user.findMany({
-          where: { college: college.college },
+          where: { 
+            college: college.college, 
+            sex: { 
+              not: null 
+            } 
+          },
           select: { sex: true },
         });
 
@@ -225,7 +230,7 @@ export const getCollegeUsersViewByCollegeId = async (req, res) => {
 
     // Fetch users for the specified college by college name
     const users = await prisma.user.findMany({
-      where: { college: collegeName }, // Use the college name to filter users
+      where: { college: collegeName, sex: { not: null } }, // Use the college name to filter users
       select: {
         id: true,
         firstName: true,

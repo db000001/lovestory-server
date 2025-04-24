@@ -133,7 +133,9 @@ export const chargeUserBalance = async (req, res) => {
     });
 
     await sendEmail({
-      email: updatedUser.personalEmail ? updatedUser.personalEmail : updatedUser.email,
+      email: updatedUser.personalEmail
+        ? updatedUser.personalEmail
+        : updatedUser.email,
       subject: `Add Money Confirmation`,
       html: addMoneyEmailHTML(amount),
     });
@@ -175,18 +177,19 @@ export const purchaseProducts = async (req, res) => {
       where: { id: user.id },
       data: { balance: user.balance - amountToReduce },
     });
-
-    // Save transaction to your database
-    await prisma.userTransactions.create({
-      data: {
-        userId: user.id,
-        paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
-        amount: Math.round(amountToReduce * 100),
-        paymentMethod: "Balance",
-        description,
-        status: "succeeded", // e.g., 'succeeded'
-      },
-    });
+    if (amountToReduce > 0) {
+      // Save transaction to your database
+      await prisma.userTransactions.create({
+        data: {
+          userId: user.id,
+          paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
+          amount: Math.round(amountToReduce * 100),
+          paymentMethod: "Balance",
+          description,
+          status: "succeeded", // e.g., 'succeeded'
+        },
+      });
+    }
 
     // If there's extra payment needed, create a PaymentIntent
     if (amountToMakeExtraPayment > 0) {
@@ -196,7 +199,9 @@ export const purchaseProducts = async (req, res) => {
       );
 
       if (!customer) {
-        return res.status(404).json({ error: "You must add a payment method before checking out." });
+        return res.status(404).json({
+          error: "You must add a payment method before checking out.",
+        });
       }
 
       // Create a PaymentIntent using the customer's default payment method
@@ -241,8 +246,13 @@ export const purchaseProducts = async (req, res) => {
 export const shareRevenue = async (req, res) => {
   const amount = Number(req.body.amount);
   const revenueId = Number(req.body.revenueId);
-  const { description1, description2, informationItems, purchasedQuestions, revenueQuestions } =
-    req.body;
+  const {
+    description1,
+    description2,
+    informationItems,
+    purchasedQuestions,
+    revenueQuestions,
+  } = req.body;
 
   // Validate input
   if (isNaN(amount) || amount <= 0) {
@@ -353,13 +363,14 @@ export const shareRevenue = async (req, res) => {
     }
 
     const today = new Date();
-    const age = today.getFullYear() - revenueUser.birthday.getFullYear();
+    const revenueUserBirthday = new Date(revenueUser.birthday);
+    const age = today.getFullYear() - revenueUserBirthday.getFullYear();
 
     await sendEmail({
       email: user.personalEmail ? user.personalEmail : user.email,
       subject: `${revenueUser.firstName} ${revenueUser.lastName}, ${age} Information Purchase`,
       html: informationPurchaseEmailHTML(
-        `${matchedUser.firstName} ${matchedUser.lastName}`,
+        `${revenueUser.firstName}`,
         age,
         purchasedQuestions,
         revenueQuestions
@@ -367,10 +378,12 @@ export const shareRevenue = async (req, res) => {
     });
 
     await sendEmail({
-      email: revenueUser.personalEmail ? revenueUser.personalEmail : revenueUser.email,
+      email: revenueUser.personalEmail
+        ? revenueUser.personalEmail
+        : revenueUser.email,
       subject: `Information Purchased`,
       html: someonePurchasedEmailHTML(
-        `${matchedUser.firstName} ${matchedUser.lastName}`,
+        `${updatedUser.firstName}`,
         amount
       ),
     });
@@ -461,17 +474,19 @@ export const purchasePremium = async (req, res) => {
       },
     });
 
-    // Save transaction to your database
-    await prisma.userTransactions.create({
-      data: {
-        userId: user.id,
-        paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
-        paymentMethod: "Stripe",
-        amount: Math.round(amountToReduce * 100),
-        description,
-        status: "succeeded", // e.g., 'succeeded'
-      },
-    });
+    if (amountToReduce > 0) {
+      // Save transaction to your database
+      await prisma.userTransactions.create({
+        data: {
+          userId: user.id,
+          paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
+          paymentMethod: "Stripe",
+          amount: Math.round(amountToReduce * 100),
+          description,
+          status: "succeeded", // e.g., 'succeeded'
+        },
+      });
+    }
 
     const startDate = new Date();
     const formattedStartDate = `${(startDate.getMonth() + 1)
@@ -862,7 +877,9 @@ export const createWithdrawRequest = async (req, res) => {
     });
 
     await sendEmail({
-      email: existingUser.personalEmail ? existingUser.personalEmail : existingUser.email,
+      email: existingUser.personalEmail
+        ? existingUser.personalEmail
+        : existingUser.email,
       subject: `Cash Out Request`,
       html: cashOutRequestEmailHTML(
         paypalEmail,

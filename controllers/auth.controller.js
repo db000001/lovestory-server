@@ -63,7 +63,7 @@ export const register = async (req, res) => {
         verificationToken,
         verificationTokenExpiration: tokenExpiration, // 1 hour expiration
         college: college.college,
-        birthday: new Date(dateOfBirth),
+        birthday: dateOfBirth,
       },
     });
 

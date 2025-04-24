@@ -23,9 +23,6 @@ import { errorHandler } from "./middleware/errorHandler.js";
 import matchRouter from "./routes/match.routes.js";
 import questionRouter from "./routes/question.routes.js";
 
-import questionnareData from "./data/data.js";
-import { userQuestionCompletedEmailHTML } from "./utils/emailTemplate.js";
-
 
 const PORT = process.env.PORT || 3001;
 

@@ -13,7 +13,7 @@ export const verifyEmailHTMLByTokenLink = (verificationUrl) =>
     src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
     style="height: 50px;"
   />
-  <h2><b>Confirm your email address</b></h2>
+  <h2>Confirm your email address</h2>
 
   <a
     href="${verificationUrl}"
@@ -44,15 +44,15 @@ export const verifyEmailHTMLByTokenLink = (verificationUrl) =>
     If you have any questions, please send an email to support@lovestory.ai
   </h3>
 
-  <h3>Thanks,</h3>
-  <h3>Love Story Team</h3>
+  <p>Thanks,</p>
+  <p>Love Story Team</p>
 
   <h3>Questions about Love Story? Check out our FAQs</h3>
 
-  <h3>Sent with care from</h3>
-  <h3>Love Story Inc.</h3>
-  <h3>108 W. 13th Street, Suite 100</h3>
-  <h3>Wilminton, Delaware 19801</h3>
+  <p>Sent with care from</p>
+  <p>Love Story Inc.</p>
+  <p>108 W. 13th Street, Suite 100</p>
+  <p>Wilminton, Delaware 19801</p>
   <div class="w-layout-grid footer9_legal-list">
     <a
       class="footer_link w-inline-block"
@@ -178,7 +178,7 @@ export const resetPwdEmailHTML = (resetPasswordUrl) =>
     src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
     style="height: 50px;"
   />
-  <h2><b>Reset your password</b></h2>
+  <h2>Reset your password</h2>
 
   <a
     href="${resetPasswordUrl}"
@@ -209,15 +209,15 @@ export const resetPwdEmailHTML = (resetPasswordUrl) =>
     If you have any questions, please send an email to support@lovestory.ai.
   </h3>
 
-  <h3>Thanks,</h3>
-  <h3>Love Story Team</h3>
+  <p>Thanks,</p>
+  <p>Love Story Team</p>
 
   <h3>Questions about Love Story? Check out our FAQs.</h3>
 
-  <h3>Sent with care from</h3>
-  <h3>Love Story Inc.</h3>
-  <h3>108 W. 13th Street, Suite 100</h3>
-  <h3>Wilminton, Delaware 19801</h3>
+  <p>Sent with care from</p>
+  <p>Love Story Inc.</p>
+  <p>108 W. 13th Street, Suite 100</p>
+  <p>Wilminton, Delaware 19801</p>
   <div class="w-layout-grid footer9_legal-list">
     <a
       class="footer_link w-inline-block"
@@ -351,7 +351,7 @@ export const approvedMatchEmailHTML = (
     src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
     style="height: 50px;"
   />
-  <h2><b>You and ${matchedUserName} approved the match on Love Story!</b></h2>
+  <h2>You and ${matchedUserName} approved the match on Love Story!</h2>
 
   <p>Congratulations on your match! Start chatting and discover your connection on Love Story!</p>
 
@@ -362,8 +362,8 @@ export const approvedMatchEmailHTML = (
     />
     <p>${matchedUserName} ${matchedUserAge}</p>
   </div>
-  <p>${score}</p>
-  <p>${summary}</p>
+  <p>Confident level: ${score}</p>
+  <p>${summary ? summary : ""}</p>
 
   <a
     href="https://app.lovestory.ai"
@@ -386,15 +386,15 @@ export const approvedMatchEmailHTML = (
     "
     >View on Love Story →</a
   >
-  <h3>Thanks,</h3>
-  <h3>Love Story Team</h3>
+  <p>Thanks,</p>
+  <p>Love Story Team</p>
 
   <h3>Questions about Love Story? Check out our FAQs.</h3>
 
-  <h3>Sent with care from</h3>
-  <h3>Love Story Inc.</h3>
-  <h3>108 W. 13th Street, Suite 100</h3>
-  <h3>Wilminton, Delaware 19801</h3>
+  <p>Sent with care from</p>
+  <p>Love Story Inc.</p>
+  <p>108 W. 13th Street, Suite 100</p>
+  <p>Wilminton, Delaware 19801</p>
   <div class="w-layout-grid footer9_legal-list">
     <a
       class="footer_link w-inline-block"
@@ -528,18 +528,18 @@ export const addMatchesEmailHTML = (
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>Someone matched with you on Love Story!</b></h2>
+    <h2>Someone matched with you on Love Story!</h2>
   
     <p>Congratulations on your match! Start chatting and discover your connection on Love Story!</p>
   
     <div style="display: flex;">
       <img
         src="${matchedUserAvatar}"
-        style="height: 50px; display: block;"
+        style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
       />
-      <p>${matchedUserName} ${matchedUserAge}</p>
+      <h3>${matchedUserName} ${matchedUserAge}</h3>
     </div>
-      <p>${score}</p>
+      <p>Confidence level: ${score}</p>
       <p>${summary}</p>
   
     <a
@@ -563,15 +563,15 @@ export const addMatchesEmailHTML = (
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -704,20 +704,20 @@ export const declinedMatchEmailHTML = (
     src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
     style="height: 50px;"
   />
-  <h2><b>Unfortunately, the match with ${matchedUserName} was declined or expired</b></h2>
+  <h2>Unfortunately, the match with ${matchedUserName} was declined or expired</h2>
 
   <p>Not every match is meant to be, but your perfect connection is still out there. Keep exploring, and don’t lose hope!</p>
 
   <div style="display: flex;">
     <img
       src="${matchedUserAvatar}"
-      style="height: 50px; display: block;"
+      style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
     />
     <div>
       <p>${matchedUserName} ${age}</p>
     </div>
   </div>
-  <p>${score}</p>
+  <p>Confidence level: ${score}</p>
 
   <a
     href="https://app.lovestory.ai"
@@ -740,15 +740,15 @@ export const declinedMatchEmailHTML = (
     "
     >View on Love Story →</a
   >
-  <h3>Thanks,</h3>
-  <h3>Love Story Team</h3>
+  <p>Thanks,</p>
+  <p>Love Story Team</p>
 
   <h3>Questions about Love Story? Check out our FAQs.</h3>
 
-  <h3>Sent with care from</h3>
-  <h3>Love Story Inc.</h3>
-  <h3>108 W. 13th Street, Suite 100</h3>
-  <h3>Wilminton, Delaware 19801</h3>
+  <p>Sent with care from</p>
+  <p>Love Story Inc.</p>
+  <p>108 W. 13th Street, Suite 100</p>
+  <p>Wilminton, Delaware 19801</p>
   <div class="w-layout-grid footer9_legal-list">
     <a
       class="footer_link w-inline-block"
@@ -876,7 +876,7 @@ export const reigniteMatchEmailHTML = (matchedUserName, age) =>
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>You've successfully purchased Reignite.</b></h2>
+    <h2>You've successfully purchased Reignite.</h2>
     <p>${matchedUserName} ${age}</p>
   
     <p>Congratulations, you’ve successfully reignited your match with ${matchedUserName}, ${age} and you now have another chance to connect.</p>
@@ -902,15 +902,15 @@ export const reigniteMatchEmailHTML = (matchedUserName, age) =>
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -1029,7 +1029,7 @@ export const informationPurchaseEmailHTML = (
   purchasedQuestions,
   revenueQuestions
 ) => {
-  const changedQuestionList = "";
+  let changedQuestionList = "";
   let totalPrice = 0;
   purchasedQuestions.forEach((question) => {
     const newAnswer = getAnswerFromQuestion(revenueQuestions, question.qIndex, question.sIndex, question.pIndex);
@@ -1049,7 +1049,7 @@ export const informationPurchaseEmailHTML = (
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <p><b>You've successfully purchased ${matchedUserName}, ${matchedUserAge}'s answers!</b></p>
+    <h2>You've successfully purchased ${matchedUserName}, ${matchedUserAge}'s answers!</h2>
   
     ${changedQuestionList}
 
@@ -1079,15 +1079,15 @@ export const informationPurchaseEmailHTML = (
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -1214,7 +1214,7 @@ export const subscriptionPurchaseEmailHTML = (duration, cost, start, end) => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>Welcome to Love Story Premium</b></h2>
+    <h2>Welcome to Love Story Premium</h2>
   
     <p>${duration}months ${cost}</p>
     <p>${start} to ${end}</p>
@@ -1245,15 +1245,15 @@ export const subscriptionPurchaseEmailHTML = (duration, cost, start, end) => {
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -1380,7 +1380,7 @@ export const subscriptionCancelEmailHTML = () => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>Your Love Story Premium subscription has been canceled.</b></h2>
+    <h2>Your Love Story Premium subscription has been canceled.</h2>
 
     <p>We're sorry to see you go! Your subscription has been successfully canceled, and your Premium access will end on [End Date]. 
     You can still enjoy Premium features until then.</p>
@@ -1406,15 +1406,15 @@ export const subscriptionCancelEmailHTML = () => {
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -1557,7 +1557,7 @@ export const cashOutRequestEmailHTML = (
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>You've requested to withdraw ${amount} from your account balance.</b></h2>
+    <h2>You've requested to withdraw ${amount} from your account balance.</h2>
 
     ${paypalAddress}
     ${venmoAddress}
@@ -1586,15 +1586,15 @@ export const cashOutRequestEmailHTML = (
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -1721,7 +1721,7 @@ export const addMoneyEmailHTML = (amount) => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>You've added ${amount} to your Love Story account balance.</b></h2>
+    <h2>You've added ${amount} to your Love Story account balance.</h2>
   
     <a
       href="https://app.lovestory.ai/settings-subscription"
@@ -1744,15 +1744,15 @@ export const addMoneyEmailHTML = (amount) => {
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -1879,7 +1879,7 @@ export const someonePurchasedEmailHTML = (matchedUserName, total) =>
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>Someone purchased your questionnaire information!</b></h2>
+    <h2>Someone purchased your questionnaire information!</h2>
   
     <p>${matchedUserName}</p>
 
@@ -1911,15 +1911,15 @@ export const someonePurchasedEmailHTML = (matchedUserName, total) =>
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -2045,11 +2045,11 @@ export const newCommentEmailHTML = (age, sex, college, avatar, comment) =>
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2><b>${age}${sex} at ${college} replied to you</b></h2>
+    <h2>${age}${sex} at ${college} replied to you.</h2>
   
     <img
       src="${avatar}"
-      style="height: 50px;"
+      style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
     />
 
     <p>${comment}</p>
@@ -2075,15 +2075,15 @@ export const newCommentEmailHTML = (age, sex, college, avatar, comment) =>
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"
@@ -2229,7 +2229,7 @@ export const chatEmailHTML = (userName, userAvatar, messages) => {
       >
         <img
           src="${userAvatar}"
-          style="width: 50px; height: 50px; border-radius: 50%; margin-right: 20px;"
+          style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
         />
 
         <span>${userName}</span>
@@ -2258,15 +2258,15 @@ export const chatEmailHTML = (userName, userAvatar, messages) => {
         "
         >Reply on Love Story →</a>
 
-      <h3>Thanks,</h3>
-      <h3>Love Story Team</h3>
+      <p>Thanks,</p>
+      <p>Love Story Team</p>
     
       <h3>Questions about Love Story? Check out our FAQs.</h3>
     
-      <h3>Sent with care from</h3>
-      <h3>Love Story Inc.</h3>
-      <h3>108 W. 13th Street, Suite 100</h3>
-      <h3>Wilminton, Delaware 19801</h3>
+      <p>Sent with care from</p>
+      <p>Love Story Inc.</p>
+      <p>108 W. 13th Street, Suite 100</p>
+      <p>Wilminton, Delaware 19801</p>
       <div class="w-layout-grid footer9_legal-list">
         <a
           class="footer_link w-inline-block"
@@ -2627,15 +2627,15 @@ export const informationUpdateEmailHTML = (qa, shopItems) => {
       "
       >View on Love Story →</a
     >
-    <h3>Thanks,</h3>
-    <h3>Love Story Team</h3>
+    <p>Thanks,</p>
+    <p>Love Story Team</p>
   
     <h3>Questions about Love Story? Check out our FAQs.</h3>
   
-    <h3>Sent with care from</h3>
-    <h3>Love Story Inc.</h3>
-    <h3>108 W. 13th Street, Suite 100</h3>
-    <h3>Wilminton, Delaware 19801</h3>
+    <p>Sent with care from</p>
+    <p>Love Story Inc.</p>
+    <p>108 W. 13th Street, Suite 100</p>
+    <p>Wilminton, Delaware 19801</p>
     <div class="w-layout-grid footer9_legal-list">
       <a
         class="footer_link w-inline-block"

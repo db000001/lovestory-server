@@ -36,6 +36,7 @@ import {
   updateUserChatNotificationsByUserId,
   deleteUserChatNotificationsByUserId,
   sendUserChatNotificationEmail,
+  updateUserQAToggleByUserId,
 } from "../controllers/user.controller.js";
 import {
   isAdminMiddleware,
@@ -49,6 +50,8 @@ const userRouter = express.Router();
 userRouter.post("/qa", createUserQA);
 
 userRouter.get("/qa/:userId", getUserQAByUserId);
+
+userRouter.put("/qa/:userId", updateUserQAToggleByUserId);
 
 userRouter.delete("/qa/:userId", deleteUserQA);
 

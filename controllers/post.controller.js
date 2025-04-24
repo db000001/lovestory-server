@@ -44,14 +44,15 @@ export const createPost = async (req, res) => {
       });
   
       const today = new Date();
+      const existingUserBirthday = new Date(existingUser.birthday);
   
       await sendEmail({
         email: existingUser.personalEmail ? existingUser.personalEmail : existingUser.email,
         subject: `New Comment From ${
-          today.getFullYear() - existingUser.birthday.getFullYear()
+          today.getFullYear() - existingUserBirthday.getFullYear()
         }${existingUser.sex} at ${existingUser.college}`,
         html: newCommentEmailHTML(
-          today.getFullYear() - existingUser.birthday.getFullYear(),
+          today.getFullYear() - existingUserBirthday.getFullYear(),
           existingUser.sex,
           existingUser.college,
           existingUser.avatar,
