@@ -2405,7 +2405,7 @@ export const userQuestionCompletedEmailHTML = (
           let answer = "";
           qaItems.forEach((qaItem, index) => {
             answer += qaItem.answer.replace("#", "; ");
-            if (index < qaItems.length) {
+            if (index < qaItems.length - 1) {
               answer += "; ";
             }
           });
@@ -2431,7 +2431,7 @@ export const userQuestionCompletedEmailHTML = (
 
               // Set answer as Type + index (uppercase type)  
               answer += `${type.toUpperCase()}${index}`;
-              if (itemIndex < qaItemArray.length) {
+              if (itemIndex < qaItemArray.length-1) {
                 answer += "; ";
               }
             })  
