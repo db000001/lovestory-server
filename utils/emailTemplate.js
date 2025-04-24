@@ -2447,8 +2447,8 @@ export const userQuestionCompletedEmailHTML = (
     answerElements += `<td>${answer}</td>`
   });
   let questionElements = '';
-  questions.forEach((q) => {
-    questionElements += `<td>${q}</td>`
+  questions.forEach((q, idx) => {
+    questionElements += `<td>${idx + 1}${q}</td>`
   })
 
   const userQuestionTable = `
