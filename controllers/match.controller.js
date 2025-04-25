@@ -57,7 +57,7 @@ export const createMatches = async (req, res) => {
           : existingUser1.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
-          `${existingUser1.firstName} ${existingUser1.lastName}`,
+          `${existingUser1.firstName}`,
           existingUser1.avatar,
           today.getFullYear() - birthday1.getFullYear(),
           match.score,
@@ -71,7 +71,7 @@ export const createMatches = async (req, res) => {
           : existingUser2.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
-          `${existingUser2.firstName} ${existingUser2.lastName}`,
+          `${existingUser2.firstName}`,
           existingUser2.avatar,
           today.getFullYear() - birthday2.getFullYear(),
           match.score,

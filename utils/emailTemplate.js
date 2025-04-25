@@ -540,7 +540,7 @@ export const addMatchesEmailHTML = (
       <h3>${matchedUserName} ${matchedUserAge}</h3>
     </div>
       <p>Confidence level: ${score}</p>
-      <p>${summary}</p>
+      <p>${summary ? summary : ''}</p>
   
     <a
       href="https://app.lovestory.ai"
