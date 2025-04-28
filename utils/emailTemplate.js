@@ -1216,7 +1216,7 @@ export const subscriptionPurchaseEmailHTML = (duration, cost, start, end) => {
     />
     <h2>Welcome to Love Story Premium</h2>
   
-    <p>${duration}months ${cost}</p>
+    <p>${duration} months $${cost.toFixed(2)}</p>
     <p>${start} to ${end}</p>
 
     <p>Congratulations, you now have access to Love Story Premium. As a subscriber, you enjoy faster matches, match filtering, 
@@ -1721,7 +1721,7 @@ export const addMoneyEmailHTML = (amount) => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've added ${amount} to your Love Story account balance.</h2>
+    <h2>You've added $${amount.toFixed(2)} to your Love Story account balance.</h2>
   
     <a
       href="https://app.lovestory.ai/settings-subscription"
@@ -2448,7 +2448,7 @@ export const userQuestionCompletedEmailHTML = (
   });
   let questionElements = '';
   questions.forEach((q, idx) => {
-    questionElements += `<td>${idx + 1}${q}</td>`
+    questionElements += `<td>${idx + 1}. ${q}</td>`
   })
 
   const userQuestionTable = `
