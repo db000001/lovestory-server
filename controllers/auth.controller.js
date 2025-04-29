@@ -40,9 +40,11 @@ export const register = async (req, res) => {
     const emailDomain = email.split("@")[1];
 
     // Check if the college exists with the given email domain
-    const college = await prisma.college.findUnique({
-      where: { emailDomain },
-    });
+    const colleges = await prisma.college.findMany();
+
+    const college = colleges.find((college) =>
+      emailDomain.includes(college.emailDomain)
+    );
 
     // If college does not exist, return an error
     if (!college) {

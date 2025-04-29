@@ -57,11 +57,11 @@ export const createMatches = async (req, res) => {
           : existingUser1.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
-          `${existingUser1.firstName}`,
-          existingUser1.avatar,
-          today.getFullYear() - birthday1.getFullYear(),
+          `${existingUser2.firstName}`,
+          existingUser2.avatar,
+          today.getFullYear() - birthday2.getFullYear(),
           match.score,
-          existingUser1.summary
+          existingUser2.summary
         ),
       });
 
@@ -71,11 +71,11 @@ export const createMatches = async (req, res) => {
           : existingUser2.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
-          `${existingUser2.firstName}`,
-          existingUser2.avatar,
-          today.getFullYear() - birthday2.getFullYear(),
+          `${existingUser1.firstName}`,
+          existingUser1.avatar,
+          today.getFullYear() - birthday1.getFullYear(),
           match.score,
-          existingUser2.summary
+          existingUser1.summary
         ),
       });
 
@@ -369,16 +369,29 @@ export const updateMatchStatus = async (req, res) => {
         match.email2Status === "accepted"
       ) {
         await sendEmail({
-          email: matchedUser.personalEmail
-            ? matchedUser.personalEmail
-            : matchedUser.email,
-          subject: `${matchedUser.firstName} ${matchedUser.lastName} Match Approved`,
+          email: user.personalEmail
+            ? user.personalEmail
+            : user.email,
+          subject: `${matchedUser.firstName} Match Approved`,
           html: approvedMatchEmailHTML(
             matchedUser.firstName,
             matchedUser.avatar,
             today.getFullYear() - matchedUserBirthday.getFullYear(),
             match.score,
             matchedUser.summary
+          ),
+        });
+        await sendEmail({
+          email: matchedUser.personalEmail
+            ? matchedUser.personalEmail
+            : matchedUser.email,
+          subject: `${user.firstName} Match Approved`,
+          html: approvedMatchEmailHTML(
+            user.firstName,
+            user.avatar,
+            today.getFullYear() - userBirthday.getFullYear(),
+            match.score,
+            user.summary
           ),
         });
       }

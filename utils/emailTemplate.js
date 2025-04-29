@@ -358,7 +358,7 @@ export const approvedMatchEmailHTML = (
   <div style="display: flex;">
     <img
       src="${matchedUserAvatar}"
-      style="height: 50px; display: block;"
+      style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
     />
     <p>${matchedUserName} ${matchedUserAge}</p>
   </div>
