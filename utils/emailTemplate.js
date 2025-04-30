@@ -540,7 +540,7 @@ export const addMatchesEmailHTML = (
       <h3>${matchedUserName} ${matchedUserAge}</h3>
     </div>
       <p>Confidence level: ${score}</p>
-      <p>${summary ? summary : ''}</p>
+      <p>${summary ? summary : ""}</p>
   
     <a
       href="https://app.lovestory.ai"
@@ -1032,7 +1032,12 @@ export const informationPurchaseEmailHTML = (
   let changedQuestionList = "";
   let totalPrice = 0;
   purchasedQuestions.forEach((question) => {
-    const newAnswer = getAnswerFromQuestion(revenueQuestions, question.qIndex, question.sIndex, question.pIndex);
+    const newAnswer = getAnswerFromQuestion(
+      revenueQuestions,
+      question.qIndex,
+      question.sIndex,
+      question.pIndex
+    );
     totalPrice += Number(question.price);
     changedQuestionList += `<p>${question.title} ${question.price}</p><p>New answer: ${newAnswer}</p>`;
   });
@@ -1721,7 +1726,9 @@ export const addMoneyEmailHTML = (amount) => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've added $${amount.toFixed(2)} to your Love Story account balance.</h2>
+    <h2>You've added $${amount.toFixed(
+      2
+    )} to your Love Story account balance.</h2>
   
     <a
       href="https://app.lovestory.ai/settings-subscription"
@@ -2409,47 +2416,110 @@ export const userQuestionCompletedEmailHTML = (
               answer += "; ";
             }
           });
-          
-          if ((qIdx === 0 && sIdx === 2 && pIdx === 4) || (qIdx === 45 && sIdx === 0 && pIdx === 6)) {
+
+          if (qIdx === 0 && sIdx === 2 && pIdx === 4) {
             const qaItemArray = answer.split("; ");
             answer = "";
             qaItemArray.forEach((item, itemIndex) => {
-              // Get the answer and split into type and value  
-              const answerParts = item.split('-');
-              const type = answerParts[0];           // 'm', 'f', or other  
-              const value = answerParts[1];          // option value  
+              // Get the answer and split into type and value
+              const answerParts = item.split("-");
+              const type = answerParts[0]; // 'm', 'f', or other
+              const value = answerParts[1]; // option value
 
-              // Determine which optionGroup to use  
+              // Determine which optionGroup to use
               let groupIndex;
-              if (type === 'm') groupIndex = 0;
-              else if (type === 'f') groupIndex = 1;
+              if (type === "m") groupIndex = 0;
+              else if (type === "f") groupIndex = 1;
               else groupIndex = 2;
 
-              // Find index of the value in the right options array  
-              const options = questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups[groupIndex].options;
+              // Find index of the value in the right options array
+              const options =
+                questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups[
+                  groupIndex
+                ].options;
               const index = options.indexOf(value) + 1;
 
-              // Set answer as Type + index (uppercase type)  
+              // Set answer as Type + index (uppercase type)
               answer += `${type.toUpperCase()}${index}`;
-              if (itemIndex < qaItemArray.length-1) {
+              if (itemIndex < qaItemArray.length - 1) {
                 answer += "; ";
               }
-            })  
+            });
+          } else if (qIdx === 45 && sIdx === 0 && pIdx === 6) {
+            const answerArray = answer.split("; ");
+            answer = "";
+            answerArray.map((answerVal, idx) => {
+              const answerParts = answerVal.split("-");
+              const type = answerParts[0]; // 'm', 'f', or other
+              const value = answerParts[1]; // option value
+
+              // Determine which optionGroup to use
+              let groupIndex;
+              if (type === "m") groupIndex = 0;
+              else if (type === "f") groupIndex = 1;
+              else groupIndex = 2;
+
+              // Find index of the value in the right options array
+              // const options = part.optionGroups[groupIndex].options;
+              const options =
+                questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups[
+                  groupIndex
+                ].options;
+              const index = options.indexOf(value) + 1;
+
+              // Set answer as Type + index (uppercase type)
+              answer += `${type.toUpperCase()}${index}`;
+
+              if (idx < answerArray.length - 1) {
+                answer += "; ";
+              }
+            });
           }
+
+          let optionGroupsLength =
+            questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups
+              .length;
+          if (optionGroupsLength > 0) {
+            const answerGroup = [];
+            for (let gindex = 0; gindex < optionGroupsLength; gindex++) {
+              let existItem = qa.filter(
+                (item) =>
+                  item.qIndex === qIdx &&
+                  item.sIndex === sIdx &&
+                  item.pIndex === pIdx &&
+                  item.gIndex === gindex
+              );
+
+              if (existItem && existItem.answer !== "") {
+                answerGroup.push(existItem.answer);
+              }
+
+              if (
+                questionnareData[qIdx].sections[sIdx].parts[pIdx].id ===
+                "q_percent_ethnicity"
+              ) {
+                if (!existItem || existItem.answer === "")
+                  answerGroup.push("0");
+              }
+            }
+
+            answer = answerGroup.join("; ");
+          }
+
           answers.push(answer);
         }
       });
     });
   });
 
-  let answerElements = '';
+  let answerElements = "";
   answers.forEach((answer) => {
-    answerElements += `<td>${answer}</td>`
+    answerElements += `<td>${answer}</td>`;
   });
-  let questionElements = '';
+  let questionElements = "";
   questions.forEach((q, idx) => {
-    questionElements += `<td>${idx + 1}. ${q}</td>`
-  })
+    questionElements += `<td>${idx + 1}. ${q}</td>`;
+  });
 
   const userQuestionTable = `
     <style>
@@ -2620,7 +2690,12 @@ export const informationUpdateEmailHTML = (qa, shopItems) => {
   const changedQuestionList = "";
   let totalPrice = 0;
   shopItems.forEach((question) => {
-    const newAnswer = getAnswerFromQuestion(qa, question.qIndex, question.sIndex, question.pIndex);
+    const newAnswer = getAnswerFromQuestion(
+      qa,
+      question.qIndex,
+      question.sIndex,
+      question.pIndex
+    );
     totalPrice += Number(question.price);
     changedQuestionList += `<p>${question.title} ${question.price}</p><p>New answer: ${newAnswer}</p>`;
   });
@@ -2789,38 +2864,41 @@ export const informationUpdateEmailHTML = (qa, shopItems) => {
 };
 
 const getAnswerFromQuestion = (jsonQAs, qindex, sindex, pindex) => {
-
-  const existingResults = jsonQAs.filter((json) => json.sIndex === sindex && json.qIndex === qindex && json.pIndex === pindex);
+  const existingResults = jsonQAs.filter(
+    (json) =>
+      json.sIndex === sindex && json.qIndex === qindex && json.pIndex === pindex
+  );
 
   existingResults.sort((a, b) => {
-      return a.gIndex - b.gIndex; // Sort in ascending order  
+    return a.gIndex - b.gIndex; // Sort in ascending order
   });
 
-  const totalInputs = existingResults.length > 0 ? Math.max(...existingResults.map(result => result.gIndex)) + 1 : -1; // Returns -1 if no results  
+  const totalInputs =
+    existingResults.length > 0
+      ? Math.max(...existingResults.map((result) => result.gIndex)) + 1
+      : -1; // Returns -1 if no results
 
-  if (totalInputs === -1)
-      return ''
+  if (totalInputs === -1) return "";
 
-  let answer = '#'.repeat(totalInputs);
-  const answerArray = answer.split('');
+  let answer = "#".repeat(totalInputs);
+  const answerArray = answer.split("");
 
   existingResults.forEach((result, index) => {
-      // Check if the current index is the last one in the existingResults array  
-      if (index === existingResults.length - 1) {
-          // If it's the last result, add without the '#'  
-          answerArray[result.gIndex] = result.answer; // No '#' added  
-      } else {
-          // For other results, add with '#'  
-          answerArray[result.gIndex] = result.answer + '#';
-      }
+    // Check if the current index is the last one in the existingResults array
+    if (index === existingResults.length - 1) {
+      // If it's the last result, add without the '#'
+      answerArray[result.gIndex] = result.answer; // No '#' added
+    } else {
+      // For other results, add with '#'
+      answerArray[result.gIndex] = result.answer + "#";
+    }
   });
 
-  answer = answerArray.join('');
+  answer = answerArray.join("");
 
-  while (answer.endsWith('#')) {
-      answer = answer.slice(0, -1); // Remove the last character  
+  while (answer.endsWith("#")) {
+    answer = answer.slice(0, -1); // Remove the last character
   }
 
   return answer;
-
-}
+};
