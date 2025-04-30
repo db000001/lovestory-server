@@ -368,6 +368,13 @@ export const updateMatchStatus = async (req, res) => {
         match.email1Status === "accepted" &&
         match.email2Status === "accepted"
       ) {
+        await prisma.matchingAction.create({
+          data: {
+            user1Id: user.id,
+            user2Id: matchedUser.id,
+            matchingAction: "accepted"
+          },
+        });
         await sendEmail({
           email: user.personalEmail
             ? user.personalEmail
@@ -396,19 +403,33 @@ export const updateMatchStatus = async (req, res) => {
         });
       }
     } else if (status === "rejected") {
+      await prisma.matchingAction.create({
+        data: {
+          user1Id: user.id,
+          user2Id: matchedUser.id,
+          matchingAction: "rejected"
+        },
+      });
       await sendEmail({
         email: matchedUser.personalEmail
           ? matchedUser.personalEmail
           : matchedUser.email,
-        subject: `${matchedUser.firstName} ${matchedUser.lastName} Match Declined or Expired`,
+        subject: `${matchedUser.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${matchedUser.firstName} ${matchedUser.lastName}`,
+          `${matchedUser.firstName}`,
           matchedUser.avatar,
           today.getFullYear() - matchedUserBirthday.getFullYear(),
           match.score
         ),
       });
     } else if (status === "reignited") {
+      await prisma.matchingAction.create({
+        data: {
+          user1Id: user.id,
+          user2Id: matchedUser.id,
+          matchingAction: "reignited"
+        },
+      });
       const reigniteCost = await prisma.miscellaneous.findUnique({
         where: { id: 1 },
         select: { reigniteCost: true },
@@ -746,9 +767,9 @@ cron.schedule("0 * * * *", async () => {
         email: existingUser1.personalEmail
           ? existingUser1.personalEmail
           : existingUser1.email,
-        subject: `${existingUser1.firstName} ${existingUser1.lastName} Match Declined or Expired`,
+        subject: `${existingUser1.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${existingUser1.firstName} ${existingUser1.lastName}`,
+          `${existingUser1.firstName}`,
           existingUser1.avatar,
           today.getFullYear() - user1Birthday.getFullYear(),
           match.score
@@ -759,9 +780,9 @@ cron.schedule("0 * * * *", async () => {
         email: existingUser2.personalEmail
           ? existingUser2.personalEmail
           : existingUser2.email,
-        subject: `${existingUser2.firstName} ${existingUser2.lastName} Match Declined or Expired`,
+        subject: `${existingUser2.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${existingUser2.firstName} ${existingUser2.lastName}`,
+          `${existingUser2.firstName}`,
           existingUser2.avatar,
           today.getFullYear() - user2Birthday.getFullYear(),
           match.score

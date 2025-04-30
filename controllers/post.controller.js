@@ -55,7 +55,7 @@ export const createPost = async (req, res) => {
           today.getFullYear() - existingUserBirthday.getFullYear(),
           existingUser.sex,
           existingUser.college,
-          existingUser.avatar,
+          existingUser.discussionAvatar ? existingUser.discussionAvatar : existingUser.avatar,
           content
         ),
       });
