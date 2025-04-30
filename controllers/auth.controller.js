@@ -26,6 +26,12 @@ export const register = async (req, res) => {
   try {
     const { firstName, lastName, email, password, dateOfBirth } = req.body;
 
+    const dob = new Date(dateOfBirth);
+
+    if (isNaN(dob.getTime()) || dob > new Date()) {
+      return res.status(400).json({ error: "Invalid date of birth" });
+    }
+
     const existingUser = await prisma.user.findUnique({
       where: {
         email: email,

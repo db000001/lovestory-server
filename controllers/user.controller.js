@@ -414,8 +414,13 @@ export const getUserById = async (req, res) => {
 
 export const getMatchedUserById = async (req, res) => {
   const { matchedUserId } = req.params;
+  const user = req.user;
 
   try {
+    const currentUser = await prisma.user.findUnique({
+      where: { id: Number(req.user.id) },
+    });
+
     // Fetch the matched user details
     const user = await prisma.user.findUnique({
       where: { id: Number(matchedUserId) },
@@ -481,7 +486,7 @@ export const getMatchedUserById = async (req, res) => {
     const today = new Date();
     let matchExpiration = match.createdAt;
 
-    if (user.premiumEndsAt !== null && user.premiumEndsAt > today) {
+    if (currentUser.premiumEndsAt !== null && currentUser.premiumEndsAt > today) {
       matchExpiration.setDate(
         matchExpiration.getDate() +
           Number(miscellaneous.subscriberMatchDeadline)
