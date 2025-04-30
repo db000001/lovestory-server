@@ -364,17 +364,17 @@ export const updateMatchStatus = async (req, res) => {
     const matchedUserBirthday = new Date(matchedUser.birthday);
 
     if (status === "accepted") {
+      await prisma.matchingAction.create({
+        data: {
+          user1Id: user.id,
+          user2Id: matchedUser.id,
+          matchingAction: "accepted"
+        },
+      });
       if (
         match.email1Status === "accepted" &&
         match.email2Status === "accepted"
       ) {
-        await prisma.matchingAction.create({
-          data: {
-            user1Id: user.id,
-            user2Id: matchedUser.id,
-            matchingAction: "accepted"
-          },
-        });
         await sendEmail({
           email: user.personalEmail
             ? user.personalEmail
