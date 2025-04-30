@@ -688,8 +688,8 @@ export const getMatchedUserData = async (req, res) => {
         // Fetch related matching actions between the two users
         const matchingActions = await prisma.matchingAction.findMany({
           where: {
-            user1Id: matchedUser.id,
-            user2Id: numericUserId,
+            user1Id: numericUserId,
+            user2Id: matchedUser.id,
           },
         });
 
