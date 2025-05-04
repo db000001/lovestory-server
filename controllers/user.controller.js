@@ -1601,9 +1601,9 @@ export const sendUserChatNotificationEmail = async (req, res) => {
 
     await sendEmail({
       email: receiver.personalEmail ? receiver.personalEmail : receiver.email,
-      subject: `New Message from ${sender.firstName} ${sender.lastName}`,
+      subject: `New Message from ${sender.firstName}`,
       html: chatEmailHTML(
-        `${sender.firstName} ${sender.lastName}`,
+        `${sender.firstName}`,
         sender.avatar,
         messages
       ),

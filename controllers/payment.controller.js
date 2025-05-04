@@ -368,7 +368,7 @@ export const shareRevenue = async (req, res) => {
 
     await sendEmail({
       email: user.personalEmail ? user.personalEmail : user.email,
-      subject: `${revenueUser.firstName} ${revenueUser.lastName}, ${age} Information Purchase`,
+      subject: `${revenueUser.firstName} ${age} Information Purchase`,
       html: informationPurchaseEmailHTML(
         `${revenueUser.firstName}`,
         age,
@@ -383,8 +383,7 @@ export const shareRevenue = async (req, res) => {
         : revenueUser.email,
       subject: `Information Purchased`,
       html: someonePurchasedEmailHTML(
-        `${updatedUser.firstName}`,
-        amount
+        (amount / 2).toFixed(2)
       ),
     });
 
@@ -543,15 +542,22 @@ export const cancelPremium = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id: user.id },
       data: {
-        premiumName: null,
-        premiumEndsAt: null,
+        premiumName: user.premiumName,
+        premiumEndsAt: user.premiumEndsAt,
       },
     });
+
+    const formatter = new Intl.DateTimeFormat('en-US', {
+      month: '2-digit',
+      day: '2-digit',
+      year: 'numeric'
+    });
+    const formattedDate = formatter.format(premiumEndsAt);
 
     await sendEmail({
       email: user.personalEmail ? user.personalEmail : user.email,
       subject: `Subscription Cancellation`,
-      html: subscriptionCancelEmailHTML(),
+      html: subscriptionCancelEmailHTML(formattedDate),
     });
 
     return res.status(200).json({

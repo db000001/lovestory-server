@@ -379,7 +379,7 @@ export const updateMatchStatus = async (req, res) => {
           email: user.personalEmail
             ? user.personalEmail
             : user.email,
-          subject: `${matchedUser.firstName} Match Approved`,
+          subject: `Match Approved`,
           html: approvedMatchEmailHTML(
             matchedUser.firstName,
             matchedUser.avatar,
@@ -392,7 +392,7 @@ export const updateMatchStatus = async (req, res) => {
           email: matchedUser.personalEmail
             ? matchedUser.personalEmail
             : matchedUser.email,
-          subject: `${user.firstName} Match Approved`,
+          subject: `Match Approved`,
           html: approvedMatchEmailHTML(
             user.firstName,
             user.avatar,

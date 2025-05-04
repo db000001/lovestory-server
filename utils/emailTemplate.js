@@ -360,9 +360,9 @@ export const approvedMatchEmailHTML = (
       src="${matchedUserAvatar}"
       style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
     />
-    <p>${matchedUserName} ${matchedUserAge}</p>
+    <p><b>${matchedUserName} ${matchedUserAge}</b></p>
   </div>
-  <p>Confident level: ${score}</p>
+  <p>Confidence level: ${score}</p>
   <p>${summary ? summary : ""}</p>
 
   <a
@@ -1039,7 +1039,7 @@ export const informationPurchaseEmailHTML = (
       question.pIndex
     );
     totalPrice += Number(question.price);
-    changedQuestionList += `<p>${question.title} ${question.price}</p><p>New answer: ${newAnswer}</p>`;
+    changedQuestionList += `<p><b>${question.title}</b> $${Number(question.price).toFixed(2)}</p><p>Answer: ${newAnswer}</p>`;
   });
 
   return `
@@ -1054,7 +1054,7 @@ export const informationPurchaseEmailHTML = (
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've successfully purchased ${matchedUserName}, ${matchedUserAge}'s answers!</h2>
+    <h2>You've successfully purchased ${matchedUserName} ${matchedUserAge}'s answers!</h2>
   
     ${changedQuestionList}
 
@@ -1372,7 +1372,7 @@ export const subscriptionPurchaseEmailHTML = (duration, cost, start, end) => {
     `;
 };
 
-export const subscriptionCancelEmailHTML = () => {
+export const subscriptionCancelEmailHTML = (endDate) => {
   return `
     <div
     style="
@@ -1387,7 +1387,7 @@ export const subscriptionCancelEmailHTML = () => {
     />
     <h2>Your Love Story Premium subscription has been canceled.</h2>
 
-    <p>We're sorry to see you go! Your subscription has been successfully canceled, and your Premium access will end on [End Date]. 
+    <p>We're sorry to see you go! Your subscription has been successfully canceled, and your Premium access will end on ${endDate}. 
     You can still enjoy Premium features until then.</p>
   
     <a
@@ -1543,13 +1543,13 @@ export const cashOutRequestEmailHTML = (
   zip,
   amount
 ) => {
-  const paypalAddress = paypal ? `<p>PayPal Email: ${paypal}</p>` : null;
-  const venmoAddress = venmo ? `<p>Venmo Username: ${venmo}</p>` : null;
+  const paypalAddress = paypal ? `<p>PayPal Email: ${paypal}</p>` : '';
+  const venmoAddress = venmo ? `<p>Venmo Username: ${venmo}</p>` : '';
   const cashAppAddress = cashApp
     ? `<p>Cash App Username: ${cashApp}</p>`
-    : null;
+    : '';
   const addressText = `<p>${address} ${city} ${state} ${zip}</p>`;
-  const amountText = `<p>${amount}</p>`;
+  const amountText = `<p>$${amount}</p>`;
   return `
     <div
     style="
@@ -1562,7 +1562,7 @@ export const cashOutRequestEmailHTML = (
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've requested to withdraw ${amount} from your account balance.</h2>
+    <h2>You've requested to withdraw $${amount} from your account balance.</h2>
 
     ${paypalAddress}
     ${venmoAddress}
@@ -1873,7 +1873,7 @@ export const addMoneyEmailHTML = (amount) => {
     `;
 };
 
-export const someonePurchasedEmailHTML = (matchedUserName, total) =>
+export const someonePurchasedEmailHTML = (total) =>
   `
     <div
     style="
@@ -1887,13 +1887,11 @@ export const someonePurchasedEmailHTML = (matchedUserName, total) =>
       style="height: 50px;"
     />
     <h2>Someone purchased your questionnaire information!</h2>
-  
-    <p>${matchedUserName}</p>
 
     <p>Great news—someone is interested in knowing you better! A Love Story user you matched with has purchased access to your
      questionnaire responses.</p>
 
-    <p>${total}</p>
+    <p>Revenue share: $${total}</p>
 
     <p>Your perfect connection might be closer than you think!</p>
   
@@ -2239,7 +2237,7 @@ export const chatEmailHTML = (userName, userAvatar, messages) => {
           style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
         />
 
-        <span>${userName}</span>
+        <span><b>${userName}</b></span>
       </div>
   
       ${imageMessageElement}
