@@ -78,9 +78,47 @@ export const getAllUsers = async (req, res) => {
       where: {
         sex: { not: null },
       },
+      select: {
+        id: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        email: true,
+        personalEmail: true,
+        birthday: true,
+        sex: true,
+        avatar: true,
+        discussionAvatar: true,
+        summary: true,
+        college: true,
+        status: true,
+        password: false,
+        role: true,
+        joinedAt: true,
+        createdAt: true,
+        updatedAt: true,
+        emailVerified: true,
+        verificationToken: false,
+        verificationTokenExpiration: false,
+        resetPwdToken: false,
+        resetPwdTokenExpiration: false,
+        refreshToken: false,
+        postStatus: true,
+        chatStatus: true,
+        matchStatus: true,
+        editStatus: true,
+        depositStatus: true,
+        withdrawStatus: true,
+        logoutStatus: true,
+        balance: true,
+        premiumEndsAt: true,
+        premiumName: true,
+        paymentMethodId: true
+      }
     });
     res.status(200).json(users);
   } catch (error) {
+    console.log("error =>", error);
     res.status(500).json({ error: "Failed to fetch users" });
   }
 };

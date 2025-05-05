@@ -879,7 +879,7 @@ export const reigniteMatchEmailHTML = (matchedUserName, age) =>
     <h2>You've successfully purchased Reignite.</h2>
     <p>${matchedUserName} ${age}</p>
   
-    <p>Congratulations, you’ve successfully reignited your match with ${matchedUserName}, ${age} and you now have another chance to connect.</p>
+    <p>Congratulations, you’ve successfully reignited your match with ${matchedUserName} ${age} and you now have another chance to connect.</p>
   
     <a
       href="https://app.lovestory.ai"
@@ -1726,9 +1726,7 @@ export const addMoneyEmailHTML = (amount) => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've added $${amount.toFixed(
-      2
-    )} to your Love Story account balance.</h2>
+    <h2>You've added $${amount.toFixed(2)} to your Love Story account balance.</h2>
   
     <a
       href="https://app.lovestory.ai/settings-subscription"

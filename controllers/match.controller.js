@@ -361,6 +361,7 @@ export const updateMatchStatus = async (req, res) => {
     }
 
     const today = new Date();
+    const userBirthday = new Date(user.birthday);
     const matchedUserBirthday = new Date(matchedUser.birthday);
 
     if (status === "accepted") {
@@ -414,11 +415,11 @@ export const updateMatchStatus = async (req, res) => {
         email: matchedUser.personalEmail
           ? matchedUser.personalEmail
           : matchedUser.email,
-        subject: `${matchedUser.firstName} Match Declined or Expired`,
+        subject: `${user.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${matchedUser.firstName}`,
-          matchedUser.avatar,
-          today.getFullYear() - matchedUserBirthday.getFullYear(),
+          `${user.firstName}`,
+          user.avatar,
+          today.getFullYear() - userBirthday.getFullYear(),
           match.score
         ),
       });
@@ -767,11 +768,11 @@ cron.schedule("0 * * * *", async () => {
         email: existingUser1.personalEmail
           ? existingUser1.personalEmail
           : existingUser1.email,
-        subject: `${existingUser1.firstName} Match Declined or Expired`,
+        subject: `${existingUser2.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${existingUser1.firstName}`,
-          existingUser1.avatar,
-          today.getFullYear() - user1Birthday.getFullYear(),
+          `${existingUser2.firstName}`,
+          existingUser2.avatar,
+          today.getFullYear() - user2Birthday.getFullYear(),
           match.score
         ),
       });
@@ -780,11 +781,11 @@ cron.schedule("0 * * * *", async () => {
         email: existingUser2.personalEmail
           ? existingUser2.personalEmail
           : existingUser2.email,
-        subject: `${existingUser2.firstName} Match Declined or Expired`,
+        subject: `${existingUser1.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${existingUser2.firstName}`,
-          existingUser2.avatar,
-          today.getFullYear() - user2Birthday.getFullYear(),
+          `${existingUser1.firstName}`,
+          existingUser1.avatar,
+          today.getFullYear() - user1Birthday.getFullYear(),
           match.score
         ),
       });
