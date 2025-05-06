@@ -452,7 +452,7 @@ export const updateMatchStatus = async (req, res) => {
           paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
           amount: Math.round(amountToReduce * 100),
           paymentMethod: "Balance",
-          description,
+          description: `Reignite ${user.firstName} ${today.getFullYear() - userBirthday.getFullYear()}`,
           status: "succeeded", // e.g., 'succeeded'
         },
       });

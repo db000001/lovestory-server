@@ -322,9 +322,14 @@ export const getUsersView = async (req, res) => {
         const revenue = transactions.reduce((total, tx) => {
           if (
             tx.description?.includes("Subscription") ||
-            tx.description?.includes("Information purchase")
+            tx.description?.includes("Information change")
           ) {
             return total + (tx.amount || 0);
+          }
+          if (
+            tx.description?.includes("Information purchase")
+          ) {
+            return total + (tx.amount / 2 || 0);
           }
           return total;
         }, 0);
@@ -332,7 +337,7 @@ export const getUsersView = async (req, res) => {
         // Share calculation from information revenue
         const share = transactions.reduce((total, tx) => {
           if (tx.description?.includes("Information revenue share")) {
-            return total + (tx.amount / 2 || 0);
+            return total + (tx.amount || 0);
           }
           return total;
         }, 0);

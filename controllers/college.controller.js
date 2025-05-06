@@ -154,17 +154,17 @@ export const getCollegesView = async (req, res) => {
             return sum + (tx.amount || 0);
           }
           if (tx.description?.includes("Information purchase")) {
-            return sum + (tx.amount || 0); // Half information revenue
-          }
-          if (tx.description?.includes("Information revenue share")) {
             return sum + (tx.amount / 2 || 0); // Half information revenue
+          }
+          if (tx.description?.includes("Information change")) {
+            return sum + (tx.amount || 0); // Half information revenue
           }
           return sum;
         }, 0);
 
         const share = transactions.reduce((sum, tx) => {
-          if (tx.description?.includes("information")) {
-            return sum + (tx.amount / 2 || 0); // Half information revenue for share
+          if (tx.description?.includes("Information revenue share")) {
+            return sum + (tx.amount || 0); // Half information revenue for share
           }
           return sum;
         }, 0);
@@ -282,9 +282,14 @@ export const getCollegeUsersViewByCollegeId = async (req, res) => {
         const revenue = transactions.reduce((total, tx) => {
           if (
             tx.description?.includes("Subscription") ||
-            tx.description?.includes("Information purchase")
+            tx.description?.includes("Information change")
           ) {
             return total + (tx.amount || 0);
+          }
+          if (
+            tx.description?.includes("Information purchase")
+          ) {
+            return total + (tx.amount / 2 || 0);
           }
           return total;
         }, 0);
@@ -292,7 +297,7 @@ export const getCollegeUsersViewByCollegeId = async (req, res) => {
         // Share calculation from information revenue
         const share = transactions.reduce((total, tx) => {
           if (tx.description?.includes("Information revenue share")) {
-            return total + (tx.amount / 2 || 0);
+            return total + (tx.amount || 0);
           }
           return total;
         }, 0);

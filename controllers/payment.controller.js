@@ -382,9 +382,7 @@ export const shareRevenue = async (req, res) => {
         ? revenueUser.personalEmail
         : revenueUser.email,
       subject: `Information Purchased`,
-      html: someonePurchasedEmailHTML(
-        (amount / 2).toFixed(2)
-      ),
+      html: someonePurchasedEmailHTML((amount / 2).toFixed(2)),
     });
 
     return res.status(200).json({
@@ -547,10 +545,10 @@ export const cancelPremium = async (req, res) => {
       },
     });
 
-    const formatter = new Intl.DateTimeFormat('en-US', {
-      month: '2-digit',
-      day: '2-digit',
-      year: 'numeric'
+    const formatter = new Intl.DateTimeFormat("en-US", {
+      month: "2-digit",
+      day: "2-digit",
+      year: "numeric",
     });
     const formattedDate = formatter.format(premiumEndsAt);
 
@@ -1038,6 +1036,32 @@ export const updateWithdrawRequestStatus = async (req, res) => {
       where: { id: Number(id) },
       data: { status },
     });
+
+    if (status == "complete") {
+      const user = await prisma.user.findUnique({
+        where: { id: updatedRequest.userId },
+      });
+
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+
+      await prisma.user.update({
+        where: { id: updatedRequest.userId },
+        data: { balance: user.balance - updatedRequest.amount },
+      });
+
+      await prisma.userTransactions.create({
+        data: {
+          userId: user.id,
+          paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
+          paymentMethod: "Balance",
+          amount: updatedRequest.amount * 100,
+          description: "Withdrawal",
+          status: "succeeded", // e.g., 'succeeded'
+        },
+      });
+    }
     res.status(200).json(updatedRequest);
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -1039,7 +1039,9 @@ export const informationPurchaseEmailHTML = (
       question.pIndex
     );
     totalPrice += Number(question.price);
-    changedQuestionList += `<p><b>${question.title}</b> $${Number(question.price).toFixed(2)}</p><p>Answer: ${newAnswer}</p>`;
+    changedQuestionList += `<p><b>${question.title}</b> $${Number(
+      question.price
+    ).toFixed(2)}</p><p>Answer: ${newAnswer}</p>`;
   });
 
   return `
@@ -1543,13 +1545,11 @@ export const cashOutRequestEmailHTML = (
   zip,
   amount
 ) => {
-  const paypalAddress = paypal ? `<p>PayPal Email: ${paypal}</p>` : '';
-  const venmoAddress = venmo ? `<p>Venmo Username: ${venmo}</p>` : '';
-  const cashAppAddress = cashApp
-    ? `<p>Cash App Username: ${cashApp}</p>`
-    : '';
+  const paypalAddress = paypal ? `<p>PayPal Email: ${paypal}</p>` : "";
+  const venmoAddress = venmo ? `<p>Venmo Username: ${venmo}</p>` : "";
+  const cashAppAddress = cashApp ? `<p>Cash App Username: ${cashApp}</p>` : "";
   const addressText = `<p>${address} ${city} ${state} ${zip}</p>`;
-  const amountText = `<p>$${amount}</p>`;
+  const amountText = `<p>$${amount.toFixed(2)}</p>`;
   return `
     <div
     style="
@@ -1562,7 +1562,9 @@ export const cashOutRequestEmailHTML = (
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've requested to withdraw $${amount} from your account balance.</h2>
+    <h2>You've requested to withdraw $${amount.toFixed(
+      2
+    )} from your account balance.</h2>
 
     ${paypalAddress}
     ${venmoAddress}
@@ -1726,7 +1728,9 @@ export const addMoneyEmailHTML = (amount) => {
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>You've added $${amount.toFixed(2)} to your Love Story account balance.</h2>
+    <h2>You've added $${amount.toFixed(
+      2
+    )} to your Love Story account balance.</h2>
   
     <a
       href="https://app.lovestory.ai/settings-subscription"
@@ -2470,6 +2474,19 @@ export const userQuestionCompletedEmailHTML = (
                 answer += "; ";
               }
             });
+          } else if (p.id === "q_birthdate") {
+            if (answer === "") {
+              answer = "";
+            } else {
+              const date = new Date(answer); // Parse the date string
+  
+              // Use UTC getters to avoid timezone shift
+              const year = date.getUTCFullYear();
+              const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+              const day = String(date.getUTCDate()).padStart(2, "0");
+  
+              answer = `${month}/${day}/${year}`;
+            }
           }
 
           let optionGroupsLength =
