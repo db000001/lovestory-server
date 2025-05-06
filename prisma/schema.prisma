@@ -117,7 +117,7 @@ model UserFilters {
   bodyType             String? @map("body_type") @db.VarChar(255)
   religiousAffiliation String? @map("religious_affiliation") @db.VarChar(255)
   ethnicity            String? @db.VarChar(255)
-  ethnicSubgroup       String? @map("ethnic_subgroup") @db.VarChar(255)
+  ethnicSubgroup       String? @map("ethnic_subgroup") @db.Text
   currentCollege       String? @map("current_college") @db.VarChar(255)
   currentState         String? @map("current_state") @db.VarChar(255)
   homeState            String? @map("home_state") @db.VarChar(255)
