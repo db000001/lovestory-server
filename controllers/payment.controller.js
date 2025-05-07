@@ -893,7 +893,7 @@ export const createWithdrawRequest = async (req, res) => {
         city,
         state,
         zipCode,
-        amount
+        Number(amount)
       ),
     });
 

@@ -714,7 +714,7 @@ export const declinedMatchEmailHTML = (
       style="width: 50px; height: 50px; display: block; border-radius: 50%; object-fit: cover; margin-right: 20px;"
     />
     <div>
-      <p>${matchedUserName} ${age}</p>
+      <p><b>${matchedUserName} ${age}</b></p>
     </div>
   </div>
   <p>Confidence level: ${score}</p>
@@ -1223,7 +1223,7 @@ export const subscriptionPurchaseEmailHTML = (duration, cost, start, end) => {
     />
     <h2>Welcome to Love Story Premium</h2>
   
-    <p>${duration} months $${cost.toFixed(2)}</p>
+    <p>${duration} ${duration === 1 ? "month" : "months"} $${cost.toFixed(2)}</p>
     <p>${start} to ${end}</p>
 
     <p>Congratulations, you now have access to Love Story Premium. As a subscriber, you enjoy faster matches, match filtering, 
