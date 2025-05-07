@@ -354,7 +354,7 @@ export const forgotPassword = async (req, res) => {
     // Send the reset password email
     await sendEmail({
       email: user.personalEmail ? user.personalEmail : user.email,
-      subject: "Reset your password",
+      subject: "Reset password",
       html: resetPwdEmailHTML(resetLink),
     });
 

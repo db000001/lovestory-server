@@ -609,6 +609,7 @@ model Miscellaneous {
   regularInfoSpendingLimit    Int? @map("regular_info_spending_limit")
   subscriberInfoSpendingLimit Int? @map("subscriber_info_spending_limit")
   reigniteCost                Int? @map("reignite_cost")
+  numberOfUsers                  Int? @map("number_of_users")
 
   @@map("miscellaneous_tbl")
 }

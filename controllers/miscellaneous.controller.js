@@ -10,6 +10,7 @@ export const upsertMiscellaneous = async (req, res) => {
     regularInfoSpendingLimit,
     subscriberInfoSpendingLimit,
     reigniteCost,
+    numberOfUsers
   } = req.body;
 
   try {
@@ -26,6 +27,7 @@ export const upsertMiscellaneous = async (req, res) => {
           regularInfoSpendingLimit: Number(regularInfoSpendingLimit),
           subscriberInfoSpendingLimit: Number(subscriberInfoSpendingLimit),
           reigniteCost: Number(reigniteCost),
+          numberOfUsers: Number(numberOfUsers),
         },
       });
 
@@ -44,6 +46,7 @@ export const upsertMiscellaneous = async (req, res) => {
           regularInfoSpendingLimit: Number(regularInfoSpendingLimit),
           subscriberInfoSpendingLimit: Number(subscriberInfoSpendingLimit),
           reigniteCost: Number(reigniteCost),
+          numberOfUsers: Number(numberOfUsers),
         },
       });
 
