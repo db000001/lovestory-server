@@ -114,7 +114,7 @@ model UserFilters {
   naturalHairColor     String? @map("natural_hair_color") @db.VarChar(255)
   height               String? @db.VarChar(255)
   weight               String? @db.VarChar(255)
-  bodyType             String? @map("body_type") @db.VarChar(255)
+  bodyType             String? @map("body_type") @db.Text
   religiousAffiliation String? @map("religious_affiliation") @db.VarChar(255)
   ethnicity            String? @db.VarChar(255)
   ethnicSubgroup       String? @map("ethnic_subgroup") @db.Text
