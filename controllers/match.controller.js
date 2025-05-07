@@ -47,6 +47,21 @@ export const createMatches = async (req, res) => {
         },
       });
 
+      // If a duplicate match is found, update it
+      if (existingMatch) {
+        // return prisma.match.update({
+        //   where: { id: existingMatch.id }, // Use the ID of the existing match
+        //   data: {
+        //     email1: match.email1,
+        //     email1Status: match.email1Status,
+        //     email2: match.email2,
+        //     email2Status: match.email2Status,
+        //     score: Number(match.score),
+        //   }, // Update with new data
+        // });
+        return null;
+      }
+
       const today = new Date();
       const birthday1 = new Date(existingUser1.birthday);
       const birthday2 = new Date(existingUser2.birthday);
@@ -78,20 +93,6 @@ export const createMatches = async (req, res) => {
           existingUser1.summary
         ),
       });
-
-      // If a duplicate match is found, update it
-      if (existingMatch) {
-        return prisma.match.update({
-          where: { id: existingMatch.id }, // Use the ID of the existing match
-          data: {
-            email1: match.email1,
-            email1Status: match.email1Status,
-            email2: match.email2,
-            email2Status: match.email2Status,
-            score: Number(match.score),
-          }, // Update with new data
-        });
-      }
 
       const expirationEndDate = new Date();
       expirationEndDate.setMonth(expirationEndDate.getMonth() + 2);
