@@ -5,7 +5,7 @@ import { getMiscellaneous, upsertMiscellaneous } from "../controllers/miscellane
 
 const miscellaneousRouter = express.Router();
 
-miscellaneousRouter.use(requireUserAuth);
+// miscellaneousRouter.use(requireUserAuth);
 
 // Route to create or update a Miscellaneous entry  
 miscellaneousRouter.post('/', upsertMiscellaneous); // We can still use POST for both create or update  
