@@ -794,6 +794,225 @@ export const getDiscussionDetailsByCategoryId = async (req, res) => {
   }
 };
 
+// export const getPostDetail = async (req, res) => {
+//   const discussionId = parseInt(req.params.discussionId); // Extract post ID from request parameters
+
+//   if (isNaN(discussionId)) {
+//     return res.status(400).json({ error: "Invalid post ID" });
+//   }
+
+//   try {
+//     // Fetching the post data
+//     const post = await prisma.post.findUnique({
+//       where: { id: Number(discussionId) },
+//       select: {
+//         id: true,
+//         userId: true,
+//         postType: true,
+//         content: true,
+//         targetId: true,
+//         pId: true,
+//         imageFileId: true, // Fetching imageFileId for later use
+//         createdAt: true, // Adding createdAt for the post
+//         updatedAt: true, // Adding updatedAt for the post
+//       },
+//     });
+
+//     if (!post) {
+//       return res.status(404).json({ error: "Post not found" });
+//     }
+
+//     // Fetching user data for the main post
+//     const postUser = await prisma.user.findUnique({
+//       where: { id: post.userId },
+//       select: {
+//         id: true,
+//         firstName: true,
+//         lastName: true,
+//         avatar: true,
+//         discussionAvatar: true,
+//         sex: true,
+//         birthday: true,
+//         college: true,
+//       },
+//     });
+
+//     // Fetching image URL for the main post
+//     const imageFileUrl = post.imageFileId
+//       ? await prisma.file.findUnique({
+//           where: { id: post.imageFileId },
+//           select: { fileUrl: true },
+//         })
+//       : null;
+
+//     // Fetching category data using targetId
+//     const category = post.targetId
+//       ? await prisma.category.findUnique({
+//           where: { id: post.targetId },
+//           select: {
+//             id: true,
+//             name: true,
+//           },
+//         })
+//       : null;
+
+//     // Function to fetch all replies (including grandchildren) in a linear fashion
+//     const fetchAllReplies = async (parentId) => {
+//       const replies = await prisma.post.findMany({
+//         where: {
+//           pId: parentId, // Match posts where pId matches the parent post id
+//           postType: "discussion",
+//         },
+//         orderBy: {
+//           createdAt: "desc", // Sort by createdAt in descending order
+//         },
+//         select: {
+//           id: true,
+//           userId: true,
+//           postType: true,
+//           content: true,
+//           targetId: true,
+//           createdAt: true,
+//           updatedAt: true,
+//           imageFileId: true, // Fetching imageFileId for reply
+//           pId: true, // Ensure pId is included
+//         },
+//       });
+
+//       const allReplies = [];
+
+//       for (const reply of replies) {
+//         // Fetching image URL for reply
+//         const replyImageFileUrl = reply.imageFileId
+//           ? await prisma.file.findUnique({
+//               where: { id: reply.imageFileId },
+//               select: { fileUrl: true },
+//             })
+//           : null;
+
+//         // Fetching emotion counts for the reply
+//         const replyEmotionCounts = await prisma.userPostEmotion.groupBy({
+//           by: ["emotion"],
+//           _count: {
+//             emotion: true,
+//           },
+//           where: {
+//             postId: reply.id,
+//           },
+//         });
+
+//         // Creating a map for emotion counts for the reply
+//         const replyEmotionCountMap = {
+//           heart: 0,
+//           cry: 0,
+//           laugh: 0,
+//           dislike: 0,
+//           surprise: 0,
+//           love: 0,
+//           pray: 0,
+//         };
+
+//         // Populate the counts for the reply
+//         replyEmotionCounts.forEach((item) => {
+//           const emotionKey = item.emotion;
+//           if (replyEmotionCountMap.hasOwnProperty(emotionKey)) {
+//             replyEmotionCountMap[emotionKey] = item._count.emotion;
+//           }
+//         });
+
+//         // Fetching user data for the reply
+//         const replyUser = await prisma.user.findUnique({
+//           where: { id: reply.userId },
+//           select: {
+//             id: true,
+//             firstName: true,
+//             lastName: true,
+//             avatar: true,
+//             sex: true,
+//             birthday: true,
+//             college: true,
+//           },
+//         });
+
+//         // Fetch the count of direct replies to the current reply
+//         const replyCount = await prisma.post.count({
+//           where: {
+//             pId: reply.id,
+//             postType: "discussion",
+//           },
+//         });
+
+//         // Add the current reply to the linear list
+//         allReplies.push({
+//           ...reply,
+//           imageFileUrl: replyImageFileUrl ? replyImageFileUrl.fileUrl : null,
+//           user: replyUser,
+//           isReply: true,
+//           replyCount, // Include replyCount for the current reply
+//           ...replyEmotionCountMap,
+//         });
+
+//         // Fetch grandchildren replies recursively
+//         const grandchildrenReplies = await fetchAllReplies(reply.id);
+
+//         // Add grandchildren replies to the linear list
+//         allReplies.push(...grandchildrenReplies);
+//       }
+
+//       return allReplies; // Return all replies in a linear structure
+//     };
+
+//     // Fetching all replies for the main post
+//     const allReplies = await fetchAllReplies(post.id);
+
+//     // Constructing the final response with both post and replies
+//     const response = {
+//       post: {
+//         id: post.id,
+//         userId: post.userId,
+//         postType: post.postType,
+//         content: post.content,
+//         targetId: post.targetId,
+//         pId: post.pId, // Include pId for the main post
+//         imageFileUrl: imageFileUrl ? imageFileUrl.fileUrl : null, // Include imageFileUrl for the main post
+//         categoryId: category ? category.id : 0, // Include category ID
+//         categoryName: category ? category.name : "", // Include category Name
+//       },
+//       replies: [
+//         {
+//           id: post.id,
+//           userId: post.userId,
+//           postType: post.postType,
+//           content: post.content,
+//           imageFileUrl: imageFileUrl ? imageFileUrl.fileUrl : null, // Include imageFileUrl for the main post
+//           targetId: post.targetId,
+//           pId: post.pId, // Include pId for the main post
+//           createdAt: post.createdAt, // Adding createdAt for the post
+//           updatedAt: post.updatedAt,
+//           user: postUser, // Include user data for the post
+//           isReply: true, // Indicate that this is the main post
+//           replyCount: allReplies.length, // Count of all replies
+//           heart: 0, // Placeholder for emotion counts
+//           cry: 0,
+//           laugh: 0,
+//           dislike: 0,
+//           surprise: 0,
+//           love: 0,
+//           pray: 0,
+//         },
+//         ...allReplies.map((reply) => ({
+//           ...reply,
+//         })), // Ensure each reply has its pId
+//       ],
+//     };
+
+//     res.json(response); // Return the response structure
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: error.message });
+//   }
+// };
+
 export const getPostDetail = async (req, res) => {
   const discussionId = parseInt(req.params.discussionId); // Extract post ID from request parameters
 
@@ -812,9 +1031,9 @@ export const getPostDetail = async (req, res) => {
         content: true,
         targetId: true,
         pId: true,
-        imageFileId: true, // Fetching imageFileId for later use
-        createdAt: true, // Adding createdAt for the post
-        updatedAt: true, // Adding updatedAt for the post
+        imageFileId: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 
@@ -856,15 +1075,49 @@ export const getPostDetail = async (req, res) => {
         })
       : null;
 
+    // Fetch emotions for the main post
+    const mainPostEmotions = await prisma.userPostEmotion.findMany({
+      where: {
+        postId: post.id,
+      },
+      select: {
+        postId: true,
+        emotion: true,
+      },
+    });
+
+    // Create emotions structure for main post
+    const mainPostEmotionCounts = mainPostEmotions.reduce((acc, emotion) => {
+      const { emotion: emotionType } = emotion;
+      if (acc[emotionType] !== undefined) {
+        acc[emotionType]++;
+      }
+      return acc;
+    }, {
+      heart: 0,
+      cry: 0,
+      laugh: 0,
+      dislike: 0,
+      surprise: 0,
+      love: 0,
+      pray: 0,
+    });
+
+    // Calculate total reactions for main post
+    const mainPostTotalReactions = Object.values(mainPostEmotionCounts).reduce(
+      (total, count) => total + count,
+      0
+    );
+
     // Function to fetch all replies (including grandchildren) in a linear fashion
     const fetchAllReplies = async (parentId) => {
       const replies = await prisma.post.findMany({
         where: {
-          pId: parentId, // Match posts where pId matches the parent post id
+          pId: parentId,
           postType: "discussion",
         },
         orderBy: {
-          createdAt: "desc", // Sort by createdAt in descending order
+          createdAt: "desc",
         },
         select: {
           id: true,
@@ -874,8 +1127,8 @@ export const getPostDetail = async (req, res) => {
           targetId: true,
           createdAt: true,
           updatedAt: true,
-          imageFileId: true, // Fetching imageFileId for reply
-          pId: true, // Ensure pId is included
+          imageFileId: true,
+          pId: true,
         },
       });
 
@@ -890,19 +1143,25 @@ export const getPostDetail = async (req, res) => {
             })
           : null;
 
-        // Fetching emotion counts for the reply
-        const replyEmotionCounts = await prisma.userPostEmotion.groupBy({
-          by: ["emotion"],
-          _count: {
-            emotion: true,
-          },
+        // Fetch emotions for the reply
+        const replyEmotions = await prisma.userPostEmotion.findMany({
           where: {
             postId: reply.id,
           },
+          select: {
+            postId: true,
+            emotion: true,
+          },
         });
 
-        // Creating a map for emotion counts for the reply
-        const replyEmotionCountMap = {
+        // Create emotions structure for reply
+        const replyEmotionCounts = replyEmotions.reduce((acc, emotion) => {
+          const { emotion: emotionType } = emotion;
+          if (acc[emotionType] !== undefined) {
+            acc[emotionType]++;
+          }
+          return acc;
+        }, {
           heart: 0,
           cry: 0,
           laugh: 0,
@@ -910,15 +1169,13 @@ export const getPostDetail = async (req, res) => {
           surprise: 0,
           love: 0,
           pray: 0,
-        };
-
-        // Populate the counts for the reply
-        replyEmotionCounts.forEach((item) => {
-          const emotionKey = item.emotion;
-          if (replyEmotionCountMap.hasOwnProperty(emotionKey)) {
-            replyEmotionCountMap[emotionKey] = item._count.emotion;
-          }
         });
+
+        // Calculate total reactions for reply
+        const replyTotalReactions = Object.values(replyEmotionCounts).reduce(
+          (total, count) => total + count,
+          0
+        );
 
         // Fetching user data for the reply
         const replyUser = await prisma.user.findUnique({
@@ -948,18 +1205,17 @@ export const getPostDetail = async (req, res) => {
           imageFileUrl: replyImageFileUrl ? replyImageFileUrl.fileUrl : null,
           user: replyUser,
           isReply: true,
-          replyCount, // Include replyCount for the current reply
-          ...replyEmotionCountMap,
+          replyCount,
+          ...replyEmotionCounts,
+          totalReactions: replyTotalReactions,
         });
 
         // Fetch grandchildren replies recursively
         const grandchildrenReplies = await fetchAllReplies(reply.id);
-
-        // Add grandchildren replies to the linear list
         allReplies.push(...grandchildrenReplies);
       }
 
-      return allReplies; // Return all replies in a linear structure
+      return allReplies;
     };
 
     // Fetching all replies for the main post
@@ -973,10 +1229,10 @@ export const getPostDetail = async (req, res) => {
         postType: post.postType,
         content: post.content,
         targetId: post.targetId,
-        pId: post.pId, // Include pId for the main post
-        imageFileUrl: imageFileUrl ? imageFileUrl.fileUrl : null, // Include imageFileUrl for the main post
-        categoryId: category ? category.id : 0, // Include category ID
-        categoryName: category ? category.name : "", // Include category Name
+        pId: post.pId,
+        imageFileUrl: imageFileUrl ? imageFileUrl.fileUrl : null,
+        categoryId: category ? category.id : 0,
+        categoryName: category ? category.name : "",
       },
       replies: [
         {
@@ -984,29 +1240,24 @@ export const getPostDetail = async (req, res) => {
           userId: post.userId,
           postType: post.postType,
           content: post.content,
-          imageFileUrl: imageFileUrl ? imageFileUrl.fileUrl : null, // Include imageFileUrl for the main post
+          imageFileUrl: imageFileUrl ? imageFileUrl.fileUrl : null,
           targetId: post.targetId,
-          pId: post.pId, // Include pId for the main post
-          createdAt: post.createdAt, // Adding createdAt for the post
+          pId: post.pId,
+          createdAt: post.createdAt,
           updatedAt: post.updatedAt,
-          user: postUser, // Include user data for the post
-          isReply: true, // Indicate that this is the main post
-          replyCount: allReplies.length, // Count of all replies
-          heart: 0, // Placeholder for emotion counts
-          cry: 0,
-          laugh: 0,
-          dislike: 0,
-          surprise: 0,
-          love: 0,
-          pray: 0,
+          user: postUser,
+          isReply: true,
+          replyCount: allReplies.length,
+          ...mainPostEmotionCounts,
+          totalReactions: mainPostTotalReactions,
         },
         ...allReplies.map((reply) => ({
           ...reply,
-        })), // Ensure each reply has its pId
+        })),
       ],
     };
 
-    res.json(response); // Return the response structure
+    res.json(response);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message });
