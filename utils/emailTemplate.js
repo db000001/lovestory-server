@@ -1223,7 +1223,9 @@ export const subscriptionPurchaseEmailHTML = (duration, cost, start, end) => {
     />
     <h2>Welcome to Love Story Premium</h2>
   
-    <p>${duration} ${duration === 1 ? "month" : "months"} $${cost.toFixed(2)}</p>
+    <p>${duration} ${duration === 1 ? "month" : "months"} $${cost.toFixed(
+    2
+  )}</p>
     <p>${start} to ${end}</p>
 
     <p>Congratulations, you now have access to Love Story Premium. As a subscriber, you enjoy faster matches, match filtering, 
@@ -2387,6 +2389,30 @@ export const chatEmailHTML = (userName, userAvatar, messages) => {
       `;
 };
 
+const findItem = (item, wrapper) => {
+  return wrapper.find(existingItem =>
+      existingItem.qIndex === item.qIndex &&
+      existingItem.sIndex === item.sIndex &&
+      existingItem.pIndex === item.pIndex &&
+      existingItem.gIndex === item.gIndex
+  );
+}
+
+const formatDate = (dateString) => {
+
+  if (!dateString || dateString === "")
+      return "";
+
+  const date = new Date(dateString); // Parse the date string  
+
+  // Use UTC getters to avoid timezone shift  
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(date.getUTCDate()).padStart(2, '0');
+
+  return `${month}/${day}/${year}`; // MM/DD/YYYY  
+}
+
 export const userQuestionCompletedEmailHTML = (
   qa,
   email,
@@ -2397,133 +2423,166 @@ export const userQuestionCompletedEmailHTML = (
   let questions = [];
   let answers = [];
 
-  questionnareData.forEach((q, qIdx) => {
-    q.sections.forEach((s, sIdx) => {
-      s.parts.forEach((p, pIdx) => {
-        questions.push(p.questionEmail);
-        let qaItems = [];
-        qaItems = qa.filter(
-          (item) =>
-            item.qIndex === qIdx && item.sIndex === sIdx && item.pIndex === pIdx
-        );
-        if (qaItems === undefined || qaItems === null || qaItems.length === 0) {
-          answers.push("");
-        } else {
-          let answer = "";
-          qaItems.forEach((qaItem, index) => {
-            answer += qaItem.answer.replaceAll("#", "; ");
-            if (index < qaItems.length - 1) {
-              answer += "; ";
-            }
-          });
+  questionnareData.map((questionnaire, qindex) =>
+    questionnaire.sections.map((section, sindex) =>
+      section.parts.map((part, index) => {
+        let newItem = {
+          qIndex: qindex,
+          sIndex: sindex,
+          pIndex: index,
+          gIndex: 0,
+          answer: "",
+          toggle: false,
+        };
+        let existItem = findItem(newItem, qa);
+        const title = part.questionEmail;
 
-          if (qIdx === 0 && sIdx === 2 && pIdx === 4) {
-            const qaItemArray = answer.split("; ");
-            answer = "";
-            qaItemArray.forEach((item, itemIndex) => {
-              // Get the answer and split into type and value
-              const answerParts = item.split("-");
-              const type = answerParts[0]; // 'm', 'f', or other
-              const value = answerParts[1]; // option value
+        let answer = existItem ? existItem.answer : "";
 
-              // Determine which optionGroup to use
-              let groupIndex;
-              if (type === "m") groupIndex = 0;
-              else if (type === "f") groupIndex = 1;
-              else groupIndex = 2;
+        if (part.optionGroups.length > 0) {
+          const answerGroup = [];
+          for (let gindex = 0; gindex < part.optionGroups.length; gindex++) {
+            newItem = {
+              qIndex: qindex,
+              sIndex: sindex,
+              pIndex: index,
+              gIndex: gindex,
+              answer: "",
+              toggle: false,
+            };
+            existItem = findItem(newItem, qa);
 
-              // Find index of the value in the right options array
-              const options =
-                questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups[
-                  groupIndex
-                ].options;
-              const index = options.indexOf(value) + 1;
-
-              // Set answer as Type + index (uppercase type)
-              answer += `${type.toUpperCase()}${index}`;
-              if (itemIndex < qaItemArray.length - 1) {
-                answer += "; ";
-              }
-            });
-          } else if (qIdx === 45 && sIdx === 0 && pIdx === 6) {
-            const answerArray = answer.split("; ");
-            answer = "";
-            answerArray.map((answerVal, idx) => {
-              const answerParts = answerVal.split("-");
-              const type = answerParts[0]; // 'm', 'f', or other
-              const value = answerParts[1]; // option value
-
-              // Determine which optionGroup to use
-              let groupIndex;
-              if (type === "m") groupIndex = 0;
-              else if (type === "f") groupIndex = 1;
-              else groupIndex = 2;
-
-              // Find index of the value in the right options array
-              // const options = part.optionGroups[groupIndex].options;
-              const options =
-                questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups[
-                  groupIndex
-                ].options;
-              const index = options.indexOf(value) + 1;
-
-              // Set answer as Type + index (uppercase type)
-              answer += `${type.toUpperCase()}${index}`;
-
-              if (idx < answerArray.length - 1) {
-                answer += "; ";
-              }
-            });
-          } else if (p.id === "q_birthdate") {
-            if (answer === "") {
-              answer = "";
-            } else {
-              const date = new Date(answer); // Parse the date string
-  
-              // Use UTC getters to avoid timezone shift
-              const year = date.getUTCFullYear();
-              const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-              const day = String(date.getUTCDate()).padStart(2, "0");
-  
-              answer = `${month}/${day}/${year}`;
+            if (existItem && existItem.answer !== "") {
+              answerGroup.push(existItem.answer);
             }
           }
 
-          let optionGroupsLength =
-            questionnareData[qIdx].sections[sIdx].parts[pIdx].optionGroups
-              .length;
-          if (optionGroupsLength > 0) {
-            const answerGroup = [];
-            for (let gindex = 0; gindex < optionGroupsLength; gindex++) {
-              let existItem = qa.filter(
-                (item) =>
-                  item.qIndex === qIdx &&
-                  item.sIndex === sIdx &&
-                  item.pIndex === pIdx &&
-                  item.gIndex === gindex
-              );
+          answer = answerGroup.join("; ");
+        }
+
+        if (part.inputGroups.length > 0) {
+          const answerGroup = [];
+
+          if (part.id === "q_percent_ethnicity") {
+            for (let gindex = 0; gindex < part.inputGroups.length; gindex++) {
+              newItem = {
+                qIndex: qindex,
+                sIndex: sindex,
+                pIndex: index,
+                gIndex: gindex,
+                answer: "",
+                toggle: false,
+              };
+              existItem = findItem(newItem, qa);
 
               if (existItem && existItem.answer !== "") {
                 answerGroup.push(existItem.answer);
               }
 
-              if (
-                questionnareData[qIdx].sections[sIdx].parts[pIdx].id ===
-                "q_percent_ethnicity"
-              ) {
+              if (part.id === "q_percent_ethnicity") {
                 if (!existItem || existItem.answer === "")
                   answerGroup.push("0");
               }
             }
+          } else {
+            for (let gindex = 0; gindex < part.optionGroups.length; gindex++) {
+              newItem = {
+                qIndex: qindex,
+                sIndex: sindex,
+                pIndex: index,
+                gIndex: gindex,
+                answer: "",
+                toggle: false,
+              };
+              existItem = findItem(newItem, qa);
 
-            answer = answerGroup.join("; ");
+              if (existItem && existItem.answer !== "") {
+                answerGroup.push(existItem.answer);
+              }
+            }
           }
 
-          answers.push(answer);
+          answer = answerGroup.join("; ");
         }
-      });
-    });
-  });
+
+        if (part.textMaxCount > 0) {
+          const answerGroup = [];
+
+          for (let i = 0; i < part.textMaxCount; i++) {
+            newItem = {
+              qIndex: qindex,
+              sIndex: sindex,
+              pIndex: index,
+              gIndex: i,
+              answer: "",
+              toggle: false,
+            };
+            existItem = findItem(newItem, qa);
+
+            if (existItem && existItem.answer !== "") {
+              answerGroup.push(existItem.answer);
+            }
+          }
+
+          answer = answerGroup.join("; ");
+        }
+
+        if (part.id === "q_birthdate" && existItem) {
+          answer = formatDate(existItem.answer);
+        }
+
+        if (part.id === "q_body_type" && answer.length > 0) {
+          // Get the answer and split into type and value
+          const answerParts = answer.split("-");
+          const type = answerParts[0]; // 'm', 'f', or other
+          const value = answerParts[1]; // option value
+
+          // Determine which optionGroup to use
+          let groupIndex;
+          if (type === "m") groupIndex = 0;
+          else if (type === "f") groupIndex = 1;
+          else groupIndex = 2;
+
+          // Find index of the value in the right options array
+          const options = part.optionGroups[groupIndex].options;
+          const index = options.indexOf(value) + 1;
+
+          // Set answer as Type + index (uppercase type)
+          answer = `${type.toUpperCase()}${index}`;
+        } else if (part.id === "q_body_type_attracted") {
+          const answerArray = answer.split("#");
+          answer = "";
+          answerArray.map((answerVal, idx) => {
+            const answerParts = answerVal.split("-");
+            const type = answerParts[0]; // 'm', 'f', or other
+            const value = answerParts[1]; // option value
+
+            // Determine which optionGroup to use
+            let groupIndex;
+            if (type === "m") groupIndex = 0;
+            else if (type === "f") groupIndex = 1;
+            else groupIndex = 2;
+
+            // Find index of the value in the right options array
+            const options = part.optionGroups[groupIndex].options;
+            const index = options.indexOf(value) + 1;
+
+            // Set answer as Type + index (uppercase type)
+            answer += `${type.toUpperCase()}${index}`;
+
+            if (idx < answerArray.length - 1) {
+              answer += "; ";
+            }
+          });
+        }
+        answer = answer.replace(/#/g, "; ");
+
+        answers.push(answer);
+        questions.push(title);
+
+      })
+    )
+  );
 
   let answerElements = "";
   answers.forEach((answer) => {
