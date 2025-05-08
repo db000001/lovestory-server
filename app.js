@@ -48,7 +48,7 @@ app.use("/api/test", async (req, res) => {
   });
 
   await sendEmail({
-    email: "noreply@lovestory.ai",
+    email: "devops654321@gmail.com",
     subject: `QA creation test`,
     html: userQuestionCompletedEmailHTML(
       qa,
