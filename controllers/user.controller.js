@@ -113,8 +113,8 @@ export const getAllUsers = async (req, res) => {
         balance: true,
         premiumEndsAt: true,
         premiumName: true,
-        paymentMethodId: true
-      }
+        paymentMethodId: true,
+      },
     });
     res.status(200).json(users);
   } catch (error) {
@@ -326,9 +326,7 @@ export const getUsersView = async (req, res) => {
           ) {
             return total + (tx.amount || 0);
           }
-          if (
-            tx.description?.includes("Information purchase")
-          ) {
+          if (tx.description?.includes("Information purchase")) {
             return total + (tx.amount / 2 || 0);
           }
           return total;
@@ -384,6 +382,86 @@ export const getUserById = async (req, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: Number(id) },
+      select: {
+        id: true,
+        firstName: true,
+        middleName: true,
+        lastName: true,
+        email: true,
+        personalEmail: true,
+        birthday: true,
+        sex: true,
+        avatar: true,
+        discussionAvatar: true,
+        summary: true,
+        college: true,
+        balance: true,
+        status: true,
+        joinedAt: true,
+        postStatus: true,
+        chatStatus: true,
+        matchStatus: true,
+        editStatus: true,
+        depositStatus: true,
+        withdrawStatus: true,
+        logoutStatus: true,
+        paymentMethodId: true,
+        premiumName: true,
+        premiumEndsAt: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    if (!user.paymentMethodId) {
+      return res.status(200).json({
+        ...user,
+        cardBrand: null,
+        cardLast4Number: null,
+      });
+    }
+
+    // Retrieve the payment method from Stripe
+    const paymentMethod = await stripe.paymentMethods.retrieve(
+      user.paymentMethodId
+    );
+
+    // Check if payment method exists and is a Mastercard
+    if (!paymentMethod) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: {
+          paymentMethodId: null,
+        },
+      });
+      return res.status(200).json({
+        ...user,
+        cardBrand: null,
+        cardLast4Number: null,
+      });
+    }
+
+    res.status(200).json({
+      ...user,
+      cardBrand: paymentMethod ? paymentMethod.card.brand : null,
+      cardLast4Number: paymentMethod ? paymentMethod.card.last4 : null,
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
+// Get a user by Email
+export const getUserByEmail = async (req, res) => {
+  const { email } = req.query;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        OR: [{ email: email }, { personalEmail: email }],
+      },
       select: {
         id: true,
         firstName: true,
@@ -529,7 +607,10 @@ export const getMatchedUserById = async (req, res) => {
     const today = new Date();
     let matchExpiration = match.createdAt;
 
-    if (currentUser.premiumEndsAt !== null && currentUser.premiumEndsAt > today) {
+    if (
+      currentUser.premiumEndsAt !== null &&
+      currentUser.premiumEndsAt > today
+    ) {
       matchExpiration.setDate(
         matchExpiration.getDate() +
           Number(miscellaneous.subscriberMatchDeadline)
@@ -1645,11 +1726,7 @@ export const sendUserChatNotificationEmail = async (req, res) => {
     await sendEmail({
       email: receiver.personalEmail ? receiver.personalEmail : receiver.email,
       subject: `New Message from ${sender.firstName}`,
-      html: chatEmailHTML(
-        `${sender.firstName}`,
-        sender.avatar,
-        messages
-      ),
+      html: chatEmailHTML(`${sender.firstName}`, sender.avatar, messages),
     });
 
     res.status(200).json({ message: "Sent email successfully!" });

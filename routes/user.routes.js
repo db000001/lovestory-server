@@ -37,6 +37,7 @@ import {
   deleteUserChatNotificationsByUserId,
   sendUserChatNotificationEmail,
   updateUserQAToggleByUserId,
+  getUserByEmail,
 } from "../controllers/user.controller.js";
 import {
   isAdminMiddleware,
@@ -74,6 +75,7 @@ userRouter.get("/some", getSomeUsers);
 userRouter.get("/view", isAdminMiddleware, getUsersView);
 userRouter.get("/user-statistics-view", getUserStatisticsView);
 userRouter.get("/inactive", getBlockedUsers);
+userRouter.get("/email", getUserByEmail);
 userRouter.get("/:id", getUserById);
 userRouter.get("/match/:matchedUserId", getMatchedUserById);
 userRouter.get("/status/:userId", getUserStatusActions);
