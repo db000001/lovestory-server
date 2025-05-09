@@ -458,7 +458,7 @@ export const getUserByEmail = async (req, res) => {
   const { email } = req.query;
 
   try {
-    const user = await prisma.user.findUnique({
+    const user = await prisma.user.findFirst({
       where: {
         OR: [{ email: email }, { personalEmail: email }],
       },
