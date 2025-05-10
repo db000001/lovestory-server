@@ -2054,7 +2054,7 @@ export const newCommentEmailHTML = (age, sex, college, avatar, comment) =>
       src="https://lovestory-aws-bucket.s3.us-west-2.amazonaws.com/avatars/HORIZONTAL_LOGO_3%402x.png"
       style="height: 50px;"
     />
-    <h2>${age}${sex === "male" ? "M" : "F"} at ${college} replied to you.</h2>
+    <h2>${age}${sex === "male" ? "M" : sex === "female" ? "F" : "I"} at ${college} replied to you.</h2>
   
     <img
       src="${avatar}"

@@ -50,7 +50,7 @@ export const createPost = async (req, res) => {
         email: existingUser.personalEmail ? existingUser.personalEmail : existingUser.email,
         subject: `New Comment From ${
           today.getFullYear() - existingUserBirthday.getFullYear()
-        }${existingUser.sex} at ${existingUser.college}`,
+        }${existingUser.sex === "male" ? 'M' : existingUser.sex === "female" ? 'F' : 'I'} at ${existingUser.college}`,
         html: newCommentEmailHTML(
           today.getFullYear() - existingUserBirthday.getFullYear(),
           existingUser.sex,
