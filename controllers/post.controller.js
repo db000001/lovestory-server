@@ -1186,6 +1186,7 @@ export const getPostDetail = async (req, res) => {
             firstName: true,
             lastName: true,
             avatar: true,
+            discussionAvatar: true,
             sex: true,
             birthday: true,
             college: true,
