@@ -113,6 +113,7 @@ export const getDiscussionDetails = async (req, res) => {
     const discussionPosts = await prisma.post.findMany({
       where: {
         postType: "discussion",
+        pId: { not: 0 }
       },
       orderBy: {
         createdAt: "desc", // Sort by createdAt descending
