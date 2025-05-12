@@ -90,7 +90,7 @@ model UserWithdrawRequests {
   paypalEmail     String?   @map("paypal_email") @db.VarChar(255)
   venmoUsername   String?   @map("venmo_username") @db.VarChar(255)
   cashAppUsername String?   @map("cash_app_username") @db.VarChar(255)
-  amount          Int?
+  amount          Float?
   address         String?   @db.VarChar(255)
   city            String?   @db.VarChar(255)
   state           String?   @db.VarChar(255)
