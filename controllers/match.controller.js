@@ -187,6 +187,8 @@ export const getMatchedUsersByUserId = async (req, res) => {
       const isExpired = match.expiration < currentDate; // Determine if the match is expired
       return {
         email: match.email1 === user.email ? match.email2 : match.email1,
+        email1: match.email1,
+        email2: match.email2,
         score: match.score,
         status:
           match.email1 === user.email ? match.email1Status : match.email2Status,
@@ -259,6 +261,8 @@ export const getMatchedUsersByUserId = async (req, res) => {
           ...matchedUser,
           rating, // Attach the average rating to the user object
           status: matchData ? matchData.status : null, // Attach match status
+          email1: matchData.email1,
+          email2: matchData.email2,
           email1Status: matchData.email1Status,
           email2Status: matchData.email2Status,
           score: matchData ? matchData.score : 0, // Attach match score
