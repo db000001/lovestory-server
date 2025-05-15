@@ -4,8 +4,14 @@ const prisma = new PrismaClient();
 
 // Create a new collection with visibility values
 export const createCollection = async (req, res) => {
-  const { name, collectionOrder, description, status, fileId, visibilityValues } =
-    req.body;
+  const {
+    name,
+    collectionOrder,
+    description,
+    status,
+    fileId,
+    visibilityValues,
+  } = req.body;
 
   try {
     // Check if a collection with the same name already exists
@@ -35,7 +41,7 @@ export const createCollection = async (req, res) => {
         collectionOrder: Number(collectionOrder),
         description,
         status,
-        fileId: Number(fileId)
+        fileId: Number(fileId),
       },
     });
 
@@ -96,7 +102,30 @@ export const getCollectionsView = async (req, res) => {
     // Fetch all collections from the collections_view table
     const collectionsView = await prisma.collectionsView.findMany();
 
-    return res.status(200).json(collectionsView);
+    const collectionsViewWithLikes = collectionsView.map(async (collection) => {
+      const videos = await prisma.video.findMany({
+        where: {
+          collectionId: collection.id,
+        },
+      });
+
+      let videoLikes = 0;
+
+      videos.forEach(async (video) => {
+        // Fetching total likes count from user_video_likes table
+        const likes = await prisma.userVideoLikes.count({
+          where: {
+            videoId: video.id,
+          },
+        });
+
+        videoLikes += likes;
+      });
+
+      collection.likes = videoLikes;
+    });
+
+    return res.status(200).json(collectionsViewWithLikes);
   } catch (error) {
     return res.status(500).json({
       message: "Error fetching collections view data",
@@ -138,8 +167,14 @@ export const getCollectionById = async (req, res) => {
 // Update a collection
 export const updateCollection = async (req, res) => {
   const { id } = req.params;
-  const { name, collectionOrder, description, status, fileId, visibilityValues } =
-    req.body;
+  const {
+    name,
+    collectionOrder,
+    description,
+    status,
+    fileId,
+    visibilityValues,
+  } = req.body;
 
   try {
     // Check if a collection with the same name exists, but not the one we're updating
@@ -176,7 +211,7 @@ export const updateCollection = async (req, res) => {
         collectionOrder: Number(collectionOrder),
         description,
         status,
-        fileId: Number(fileId)
+        fileId: Number(fileId),
       },
     });
 
