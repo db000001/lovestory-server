@@ -175,8 +175,10 @@ export const getMatchesView = async (req, res) => {
           ...match,
           user1Id: user1.id,
           user1Name: decryptData(user1.firstName) + ' ' + decryptData(user1.lastName),
+          user1Status: match.email1Status,
           user2Id: user2.id,
           user2Name: decryptData(user2.firstName) + ' ' + decryptData(user2.lastName),
+          user2Status: match.email2Status
         };
       })
     );
