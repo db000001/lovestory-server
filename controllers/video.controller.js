@@ -529,6 +529,7 @@ export const getVideoDetail = async (req, res) => {
               sex: true,
               birthday: true,
               college: true,
+              discussionAvatar: true,
             },
           })
         : [];
