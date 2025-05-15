@@ -81,7 +81,9 @@ export const getAllPosts = async (req, res) => {
 // Get discussions view
 export const getDiscussionsView = async (req, res) => {
   try {
-    const discussions = await prisma.discussionsView.findMany();
+    const discussions = await prisma.discussionsView.findMany({
+      where: { pId: 0 }
+    });
     res.status(200).json(discussions);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -1105,7 +1107,7 @@ export const getPostDetail = async (req, res) => {
   try {
     // Fetching the post data
     const post = await prisma.post.findUnique({
-      where: { id: Number(discussionId) },
+      where: { id: Number(discussionId), pId: 0 },
       select: {
         id: true,
         userId: true,
