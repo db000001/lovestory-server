@@ -9,11 +9,11 @@ datasource db {
 
 model User {
   id                          Int              @id @default(autoincrement())
-  firstName                   String           @map("first_name") @db.VarChar(100)
-  middleName                  String?          @map("middle_name") @db.VarChar(100)
-  lastName                    String           @map("last_name") @db.VarChar(100)
-  email                       String           @unique @db.VarChar(100)
-  personalEmail               String?          @unique @map("personal_email") @db.VarChar(100)
+  firstName                   String           @map("first_name") @db.Text
+  middleName                  String?          @map("middle_name") @db.Text
+  lastName                    String           @map("last_name") @db.Text
+  email                       String           @unique @db.VarChar(1500)
+  personalEmail               String?          @unique @map("personal_email") @db.VarChar(1500)
   birthday                    String?          @db.VarChar(255)
   sex                         user_tbl_sex?
   avatar                      String?          @db.VarChar(255)
@@ -104,26 +104,26 @@ model UserWithdrawRequests {
 model UserFilters {
   id                   Int     @id @default(autoincrement())
   userId               Int?    @unique @map("user_id")
-  firstName            String? @map("first_name") @db.VarChar(255)
-  middleName           String? @map("middle_name") @db.VarChar(255)
-  lastName             String? @map("last_name") @db.VarChar(255)
-  age                  String? @db.VarChar(255)
-  sex                  String? @db.VarChar(255)
-  eyeColor             String? @map("eye_color") @db.VarChar(255)
-  currentHairColor     String? @map("current_hair_color") @db.VarChar(255)
-  naturalHairColor     String? @map("natural_hair_color") @db.VarChar(255)
-  height               String? @db.VarChar(255)
-  weight               String? @db.VarChar(255)
+  firstName            String? @map("first_name") @db.Text
+  middleName           String? @map("middle_name") @db.Text
+  lastName             String? @map("last_name") @db.Text
+  age                  String? @db.Text
+  sex                  String? @db.Text
+  eyeColor             String? @map("eye_color") @db.Text
+  currentHairColor     String? @map("current_hair_color") @db.Text
+  naturalHairColor     String? @map("natural_hair_color") @db.Text
+  height               String? @db.Text
+  weight               String? @db.Text
   bodyType             String? @map("body_type") @db.Text
-  religiousAffiliation String? @map("religious_affiliation") @db.VarChar(255)
-  ethnicity            String? @db.VarChar(255)
+  religiousAffiliation String? @map("religious_affiliation") @db.Text
+  ethnicity            String? @db.Text
   ethnicSubgroup       String? @map("ethnic_subgroup") @db.Text
-  currentCollege       String? @map("current_college") @db.VarChar(255)
-  currentState         String? @map("current_state") @db.VarChar(255)
-  homeState            String? @map("home_state") @db.VarChar(255)
-  politicalViews       String? @map("political_views") @db.VarChar(255)
-  typeOfRelationship   String? @map("type_of_relationship") @db.VarChar(255)
-  numberOfChildren     String? @map("number_of_children") @db.VarChar(255)
+  currentCollege       String? @map("current_college") @db.Text
+  currentState         String? @map("current_state") @db.Text
+  homeState            String? @map("home_state") @db.Text
+  politicalViews       String? @map("political_views") @db.Text
+  typeOfRelationship   String? @map("type_of_relationship") @db.Text
+  numberOfChildren     String? @map("number_of_children") @db.Text
 
   createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(0)
   updatedAt DateTime? @updatedAt @map("updated_at") @db.Timestamp(0)
