@@ -17,11 +17,11 @@ import collectionRouter from "./routes/collection.routes.js";
 import videoRouter from "./routes/video.routes.js";
 import paymentRouter from "./routes/payment.routes.js";
 import miscellaneousRouter from "./routes/miscellaneous.routes.js";
+import matchRouter from "./routes/match.routes.js";
+import questionRouter from "./routes/question.routes.js";
 
 import passportJWTStrategy from "./config/passport.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import matchRouter from "./routes/match.routes.js";
-import questionRouter from "./routes/question.routes.js";
 
 import { PrismaClient } from "@prisma/client";
 import { userQuestionCompletedEmailHTML } from "./utils/emailTemplate.js";

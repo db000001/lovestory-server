@@ -8,6 +8,7 @@ import {
   resetPwdEmailHTML,
   verifyEmailHTMLByTokenLink,
 } from "../utils/emailTemplate.js";
+import { decryptData, encryptData } from "../utils/encryption.js";
 
 const prisma = new PrismaClient();
 
@@ -34,7 +35,7 @@ export const register = async (req, res) => {
 
     const existingUser = await prisma.user.findUnique({
       where: {
-        email: email,
+        email: encryptData(email),
       },
     });
 
@@ -64,9 +65,9 @@ export const register = async (req, res) => {
     const tokenExpiration = new Date(Date.now() + 3600000);
     const newUser = await prisma.user.create({
       data: {
-        firstName,
-        lastName,
-        email,
+        firstName: encryptData(firstName),
+        lastName: encryptData(lastName),
+        email: encryptData(email),
         password: hashedPassword,
         verificationToken,
         verificationTokenExpiration: tokenExpiration, // 1 hour expiration
@@ -78,7 +79,7 @@ export const register = async (req, res) => {
     const verificationLink = `https://app.lovestory.ai/signup-questionnaire?token=${verificationToken}&userId=${newUser.id}`;
 
     await sendEmail({
-      email: newUser.personalEmail ? newUser.personalEmail : newUser.email,
+      email: decryptData(newUser.personalEmail) ? decryptData(newUser.personalEmail) : decryptData(newUser.email),
       subject: "Verify Your Email Address",
       html: verifyEmailHTMLByTokenLink(verificationLink),
     });
@@ -98,7 +99,7 @@ export const login = async (req, res) => {
     // Find the user by email
     const existingUser = await prisma.user.findUnique({
       where: {
-        email: email,
+        email: encryptData(email),
       },
     });
 
@@ -119,7 +120,7 @@ export const login = async (req, res) => {
     // Create payload for JWT tokens
     const payload = {
       userId: existingUser.id,
-      email: existingUser.email,
+      email: decryptData(existingUser.email),
     };
 
     // Generate access and refresh tokens
@@ -156,8 +157,8 @@ export const login = async (req, res) => {
       accessToken,
       user: {
         userId: existingUser.id,
-        email: existingUser.email,
-        fullName: existingUser.firstName + " " + existingUser.lastName,
+        email: decryptData(existingUser.email),
+        fullName: decryptData(existingUser.firstName) + " " + decryptData(existingUser.lastName),
         emailVerified: existingUser.emailVerified,
         role: existingUser.role,
       },
@@ -322,7 +323,7 @@ export const forgotPassword = async (req, res) => {
     // Check if the user exists with the provided email
     const user = await prisma.user.findUnique({
       where: {
-        email: email.trim(),
+        email: encryptData(email),
       },
     });
 
@@ -340,7 +341,7 @@ export const forgotPassword = async (req, res) => {
 
     await prisma.user.update({
       where: {
-        email: email.trim(),
+        email: encryptData(email),
       },
       data: {
         resetPwdToken: resetToken,
@@ -353,7 +354,7 @@ export const forgotPassword = async (req, res) => {
 
     // Send the reset password email
     await sendEmail({
-      email: user.personalEmail ? user.personalEmail : user.email,
+      email: decryptData(user.personalEmail) ? decryptData(user.personalEmail) : decryptData(user.email),
       subject: "Reset password",
       html: resetPwdEmailHTML(resetLink),
     });
@@ -372,7 +373,7 @@ export const resetPwd = async (req, res) => {
   try {
     // Check if the user exists with the provided email
     const user = await prisma.user.findUnique({
-      where: { email: email.trim() },
+      where: { email: encryptData(email) },
     });
 
     // If user not found, respond with a message indicating so
@@ -397,7 +398,7 @@ export const resetPwd = async (req, res) => {
 
     // Update the user's password in the database
     await prisma.user.update({
-      where: { email: email.trim() },
+      where: { email: encryptData(email) },
       data: { password: hashedPassword },
     });
 

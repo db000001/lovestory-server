@@ -243,8 +243,27 @@ export const getCollegeUsersViewByCollegeId = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     const results = await Promise.all(
-      users.map(async (user) => {
+      decryptedUsers.map(async (user) => {
         const fullName = `${user.firstName} ${user.lastName}`;
 
         // Last active date

@@ -11,6 +11,7 @@ import {
   subscriptionPurchaseEmailHTML,
 } from "../utils/emailTemplate.js";
 import { sendEmail } from "../utils/email.js";
+import { decryptData } from "../utils/encryption.js";
 
 const prisma = new PrismaClient();
 
@@ -133,9 +134,9 @@ export const chargeUserBalance = async (req, res) => {
     });
 
     await sendEmail({
-      email: updatedUser.personalEmail
-        ? updatedUser.personalEmail
-        : updatedUser.email,
+      email: decryptData(updatedUser.personalEmail)
+        ? decryptData(updatedUser.personalEmail)
+        : decryptData(updatedUser.email),
       subject: `Add Money Confirmation`,
       html: addMoneyEmailHTML(amount),
     });
@@ -367,7 +368,7 @@ export const shareRevenue = async (req, res) => {
     const age = today.getFullYear() - revenueUserBirthday.getFullYear();
 
     await sendEmail({
-      email: user.personalEmail ? user.personalEmail : user.email,
+      email: decryptData(user.personalEmail) ? decryptData(user.personalEmail) : decryptData(user.email),
       subject: `${revenueUser.firstName} ${age} Information Purchase`,
       html: informationPurchaseEmailHTML(
         `${revenueUser.firstName}`,
@@ -378,9 +379,9 @@ export const shareRevenue = async (req, res) => {
     });
 
     await sendEmail({
-      email: revenueUser.personalEmail
-        ? revenueUser.personalEmail
-        : revenueUser.email,
+      email: decryptData(revenueUser.personalEmail)
+        ? decryptData(revenueUser.personalEmail)
+        : decryptData(revenueUser.email),
       subject: `Information Purchased`,
       html: someonePurchasedEmailHTML((amount / 2).toFixed(2)),
     });
@@ -502,7 +503,7 @@ export const purchasePremium = async (req, res) => {
       .padStart(2, "0")}/${endDate.getFullYear()}`;
 
     await sendEmail({
-      email: user.personalEmail ? user.personalEmail : user.email,
+      email: decryptData(user.personalEmail) ? decryptData(user.personalEmail) : decryptData(user.email),
       subject: `Premium Subscription`,
       html: subscriptionPurchaseEmailHTML(
         premiumPeriod,
@@ -553,7 +554,7 @@ export const cancelPremium = async (req, res) => {
     const formattedDate = formatter.format(premiumEndsAt);
 
     await sendEmail({
-      email: user.personalEmail ? user.personalEmail : user.email,
+      email: decryptData(user.personalEmail) ? decryptData(user.personalEmail) : decryptData(user.email),
       subject: `Subscription Cancellation`,
       html: subscriptionCancelEmailHTML(formattedDate),
     });
@@ -596,9 +597,26 @@ export const getTransactionHistory = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Create a mapping of userId to userName for easy lookup
     const userNameMap = {};
-    users.forEach((user) => {
+    decryptedUsers.forEach((user) => {
       userNameMap[user.id] = `${user.firstName} ${user.lastName}`;
     });
 
@@ -631,6 +649,14 @@ export const getTransactionHistoryByUserId = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      middleName: user.middleName ? decryptData(user.middleName) : null,
+      email: user.email ? decryptData(user.email) : null,
+    };
+
     // Fetch transaction history from the database
     const transactions = await prisma.userTransactions.findMany({
       where: { userId: userId },
@@ -641,7 +667,7 @@ export const getTransactionHistoryByUserId = async (req, res) => {
     // Map through requests and add userName to each request
     const formattedTransactions = transactions.map((transaction) => ({
       ...transaction,
-      user: user.firstName + " " + user.lastName, // Fallback if user is not found
+      user: decryptedUser.firstName + " " + decryptedUser.lastName, // Fallback if user is not found
     }));
 
     return res.status(200).json({
@@ -881,9 +907,9 @@ export const createWithdrawRequest = async (req, res) => {
     });
 
     await sendEmail({
-      email: existingUser.personalEmail
-        ? existingUser.personalEmail
-        : existingUser.email,
+      email: decryptData(existingUser.personalEmail)
+        ? decryptData(existingUser.personalEmail)
+        : decryptData(existingUser.email),
       subject: `Cash Out Request`,
       html: cashOutRequestEmailHTML(
         paypalEmail,
@@ -925,9 +951,26 @@ export const getAllWithdrawRequests = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Create a mapping of userId to userName for easy lookup
     const userNameMap = {};
-    users.forEach((user) => {
+    decryptedUsers.forEach((user) => {
       userNameMap[user.id] = `${user.firstName} ${user.lastName}`;
     });
 

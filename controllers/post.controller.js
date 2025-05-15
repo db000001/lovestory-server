@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { newCommentEmailHTML } from "../utils/emailTemplate.js";
 import { sendEmail } from "../utils/email.js";
+import { decryptData } from "../utils/encryption.js";
 const prisma = new PrismaClient();
 
 // Create a new Post
@@ -47,7 +48,7 @@ export const createPost = async (req, res) => {
       const existingUserBirthday = new Date(existingUser.birthday);
   
       await sendEmail({
-        email: existingUser.personalEmail ? existingUser.personalEmail : existingUser.email,
+        email: decryptData(existingUser.personalEmail) ? decryptData(existingUser.personalEmail) : decryptData(existingUser.email),
         subject: `New Comment From ${
           today.getFullYear() - existingUserBirthday.getFullYear()
         }${existingUser.sex === "male" ? 'M' : existingUser.sex === "female" ? 'F' : 'I'} at ${existingUser.college}`,
@@ -153,6 +154,27 @@ export const getDiscussionDetails = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     const categories = await prisma.category.findMany({
       where: {
         id: { in: targetIds },
@@ -237,7 +259,7 @@ export const getDiscussionDetails = async (req, res) => {
 
     // Combining the results
     const result = discussionPosts.map((post) => {
-      const user = users.find((u) => u.id === post.userId);
+      const user = decryptedUsers.find((u) => u.id === post.userId);
       const category = categories.find((c) => c.id === post.targetId);
       const replyCount = repliesCountMap[post.id] || 0; // Get reply count or default to 0
       const imageUrl = post.imageFileId ? imageFileMap[post.imageFileId] : null;
@@ -318,6 +340,27 @@ export const getDiscussionDetailsByUserId = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     const categories = await prisma.category.findMany({
       where: {
         id: { in: targetIds },
@@ -406,7 +449,7 @@ export const getDiscussionDetailsByUserId = async (req, res) => {
 
     // Combining the results
     const result = discussionPosts.map((post) => {
-      const user = users.find((u) => u.id === post.userId);
+      const user = decryptedUsers.find((u) => u.id === post.userId);
       const category = categories.find((c) => c.id === post.targetId);
       const replyCount = repliesCountMap[post.id] || 0; // Get reply count or default to 0
 
@@ -481,6 +524,25 @@ export const getDiscussionDetailCommentsByUserId = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     const categories = await prisma.category.findMany({
       where: {
         id: { in: targetIds },
@@ -569,7 +631,7 @@ export const getDiscussionDetailCommentsByUserId = async (req, res) => {
 
     // Combining the results
     const result = discussionPosts.map((post) => {
-      const user = users.find((u) => u.id === post.userId);
+      const user = decryptedUsers.find((u) => u.id === post.userId);
       const category = categories.find((c) => c.id === post.targetId);
       const replyCount = repliesCountMap[post.id] || 0; // Get reply count or default to 0
 
@@ -651,6 +713,25 @@ export const getDiscussionDetailsByCategoryId = async (req, res) => {
         sex: true,
         college: true,
       },
+    });
+
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
     });
 
     const categories = await prisma.category.findMany({
@@ -736,7 +817,7 @@ export const getDiscussionDetailsByCategoryId = async (req, res) => {
 
     // Combining the results with reply counts, total reactions, emotions, and image URLs
     let result = discussionPosts.map((post) => {
-      const user = users.find((u) => u.id === post.userId);
+      const user = decryptedUsers.find((u) => u.id === post.userId);
       const category = categories.find((c) => c.id === post.targetId);
       const replyCount = repliesCountMap[post.id] || 0; // Get reply count or default to 0
 
@@ -1057,6 +1138,13 @@ export const getPostDetail = async (req, res) => {
       },
     });
 
+    const decryptedPostUser = {
+      ...postUser,
+      firstName: postUser.firstName ? decryptData(postUser.firstName) : null,
+      lastName: postUser.lastName ? decryptData(postUser.lastName) : null,
+      email: postUser.email ? decryptData(postUser.email) : null,
+    };
+
     // Fetching image URL for the main post
     const imageFileUrl = post.imageFileId
       ? await prisma.file.findUnique({
@@ -1193,6 +1281,13 @@ export const getPostDetail = async (req, res) => {
           },
         });
 
+        const decryptedReplyUser = {
+          ...replyUser,
+          firstName: replyUser.firstName ? decryptData(replyUser.firstName) : null,
+          lastName: replyUser.lastName ? decryptData(replyUser.lastName) : null,
+          email: replyUser.email ? decryptData(replyUser.email) : null,
+        };
+
         // Fetch the count of direct replies to the current reply
         const replyCount = await prisma.post.count({
           where: {
@@ -1205,7 +1300,7 @@ export const getPostDetail = async (req, res) => {
         allReplies.push({
           ...reply,
           imageFileUrl: replyImageFileUrl ? replyImageFileUrl.fileUrl : null,
-          user: replyUser,
+          user: decryptedReplyUser,
           isReply: true,
           replyCount,
           ...replyEmotionCounts,
@@ -1247,7 +1342,7 @@ export const getPostDetail = async (req, res) => {
           pId: post.pId,
           createdAt: post.createdAt,
           updatedAt: post.updatedAt,
-          user: postUser,
+          user: decryptedPostUser,
           isReply: true,
           replyCount: allReplies.length,
           ...mainPostEmotionCounts,
@@ -1321,6 +1416,25 @@ export const searchDiscussionDetails = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     const categories = await prisma.category.findMany({
       where: {
         id: { in: targetIds },
@@ -1372,7 +1486,7 @@ export const searchDiscussionDetails = async (req, res) => {
 
     // Combining the results
     const result = discussionPosts.map((post) => {
-      const user = users.find((u) => u.id === post.userId);
+      const user = decryptedUsers.find((u) => u.id === post.userId);
       const category = categories.find((c) => c.id === post.targetId);
       const replyCount = repliesCountMap[post.id] || 0; // Get reply count or default to 0
 
@@ -1496,6 +1610,27 @@ export const getReplyDiscussionsById = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Define the emotion counts structure
     const emotionCountMapTemplate = {
       heart: 0,
@@ -1529,7 +1664,7 @@ export const getReplyDiscussionsById = async (req, res) => {
 
     // Map user data and emotion counts to their corresponding discussions
     const discussionsWithUser = discussions.map((post) => {
-      const user = users.find((u) => u.id === post.userId);
+      const user = decryptedUsers.find((u) => u.id === post.userId);
       const emotions = emotionCountByPost[post.id] || emotionCountMapTemplate;
       return {
         ...post,
@@ -1606,6 +1741,13 @@ export const getReviewsByUserId = async (req, res) => {
       }, // Only fetch the email field
     });
 
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      email: user.email ? decryptData(user.email) : null,
+    };
+
     // If user doesn't exist, return a 404 error
     if (!user) {
       return res.status(404).json({ error: "User not found." });
@@ -1614,16 +1756,16 @@ export const getReviewsByUserId = async (req, res) => {
     // Find matches associated with the user's email
     const matches = await prisma.match.findMany({
       where: {
-        OR: [{ email1: user.email }, { email2: user.email }],
+        OR: [{ email1: decryptedUser.email }, { email2: decryptedUser.email }],
       },
     });
 
     // Map matches to get matched users and their statuses
     const matchedUsersData = matches.map((match) => {
       return {
-        email: match.email1 === user.email ? match.email2 : match.email1,
+        email: match.email1 === decryptedUser.email ? match.email2 : match.email1,
         status:
-          match.email1 === user.email ? match.email1Status : match.email2Status,
+          match.email1 === decryptedUser.email ? match.email1Status : match.email2Status,
       };
     });
 
@@ -1646,9 +1788,28 @@ export const getReviewsByUserId = async (req, res) => {
       },
     });
 
+    const decryptedMatchedUsers = matchedUsers.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Calculate reviews and ratings for each matched user
     const usersWithReviews = await Promise.all(
-      matchedUsers.map(async (matchedUser) => {
+      decryptedMatchedUsers.map(async (matchedUser) => {
         // Fetch reviews that the given user left for matched users
         const userReviews = await prisma.post.findMany({
           where: {
@@ -1687,7 +1848,7 @@ export const getReviewsByUserId = async (req, res) => {
 
         return {
           userReview: {
-            ...user,
+            ...decryptedUser,
             reviewId: userReviews.length > 0 ? userReviews[0].id : 0,
             rating: userRating, // Attach the average rating of the review left by the user
             content: userReviews.length > 0 ? userReviews[0].content : "", // Fetch content of the first review if exists

@@ -7,6 +7,7 @@ import {
   reigniteMatchEmailHTML,
 } from "../utils/emailTemplate.js";
 import cron from "node-cron";
+import { decryptData, encryptData } from "../utils/encryption.js";
 
 const prisma = new PrismaClient();
 
@@ -37,15 +38,31 @@ export const createMatches = async (req, res) => {
 
       const existingUser1 = await prisma.user.findUnique({
         where: {
-          email: email1,
+          email: encryptData(email1),
         },
       });
 
+      const decryptedExistingUser1 = {
+        ...existingUser1,
+        firstName: existingUser1.firstName ? decryptData(existingUser1.firstName) : null,
+        lastName: existingUser1.lastName ? decryptData(existingUser1.lastName) : null,
+        middleName: existingUser1.middleName ? decryptData(existingUser1.middleName) : null,
+        email: existingUser1.email ? decryptData(existingUser1.email) : null,
+      };
+
       const existingUser2 = await prisma.user.findUnique({
         where: {
-          email: email2,
+          email: encryptData(email2),
         },
       });
+
+      const decryptedExistingUser2 = {
+        ...existingUser2,
+        firstName: existingUser2.firstName ? decryptData(existingUser2.firstName) : null,
+        lastName: existingUser2.lastName ? decryptData(existingUser2.lastName) : null,
+        middleName: existingUser2.middleName ? decryptData(existingUser2.middleName) : null,
+        email: existingUser2.email ? decryptData(existingUser2.email) : null,
+      };
 
       // If a duplicate match is found, update it
       if (existingMatch) {
@@ -63,34 +80,34 @@ export const createMatches = async (req, res) => {
       }
 
       const today = new Date();
-      const birthday1 = new Date(existingUser1.birthday);
-      const birthday2 = new Date(existingUser2.birthday);
+      const birthday1 = new Date(decryptedExistingUser1.birthday);
+      const birthday2 = new Date(decryptedExistingUser2.birthday);
 
       await sendEmail({
-        email: existingUser1.personalEmail
-          ? existingUser1.personalEmail
-          : existingUser1.email,
+        email: decryptedExistingUser1.personalEmail
+          ? decryptedExistingUser1.personalEmail
+          : decryptedExistingUser1.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
-          `${existingUser2.firstName}`,
-          existingUser2.avatar,
+          `${decryptedExistingUser2.firstName}`,
+          decryptedExistingUser2.avatar,
           today.getFullYear() - birthday2.getFullYear(),
           match.score,
-          existingUser2.summary
+          decryptedExistingUser2.summary
         ),
       });
 
       await sendEmail({
-        email: existingUser2.personalEmail
-          ? existingUser2.personalEmail
-          : existingUser2.email,
+        email: decryptedExistingUser2.personalEmail
+          ? decryptedExistingUser2.personalEmail
+          : decryptedExistingUser2.email,
         subject: `Matched`,
         html: addMatchesEmailHTML(
-          `${existingUser1.firstName}`,
-          existingUser1.avatar,
+          `${decryptedExistingUser1.firstName}`,
+          decryptedExistingUser1.avatar,
           today.getFullYear() - birthday1.getFullYear(),
           match.score,
-          existingUser1.summary
+          decryptedExistingUser1.summary
         ),
       });
 
@@ -167,6 +184,14 @@ export const getMatchedUsersByUserId = async (req, res) => {
       select: { id: true, email: true }, // Only fetch the email field
     });
 
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      middleName: user.middleName ? decryptData(user.middleName) : null,
+      email: user.email ? decryptData(user.email) : null,
+    };
+
     // If user doesn't exist, return a 404 error
     if (!user) {
       return res.status(404).json({ error: "User not found." });
@@ -186,12 +211,12 @@ export const getMatchedUsersByUserId = async (req, res) => {
     const matchedUsersData = matches.map((match) => {
       const isExpired = match.expiration < currentDate; // Determine if the match is expired
       return {
-        email: match.email1 === user.email ? match.email2 : match.email1,
+        email: match.email1 === decryptedUser.email ? match.email2 : match.email1,
         email1: match.email1,
         email2: match.email2,
         score: match.score,
         status:
-          match.email1 === user.email ? match.email1Status : match.email2Status,
+          match.email1 === decryptedUser.email ? match.email1Status : match.email2Status,
         email1Status: match.email1Status,
         email2Status: match.email2Status,
         createdAt: match.createdAt,
@@ -221,9 +246,30 @@ export const getMatchedUsersByUserId = async (req, res) => {
       },
     });
 
+    const decryptedMatchedUsers = matchedUsers.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          email: user.email ? decryptData(user.email) : null,
+          personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+          personalEmail: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Calculate average ratings for each matched user based on their review posts targeting the user's userId
     const usersWithRatingsAndStatuses = await Promise.all(
-      matchedUsers.map(async (matchedUser) => {
+      decryptedMatchedUsers.map(async (matchedUser) => {
         const posts = await prisma.post.findMany({
           where: {
             targetId: matchedUser.id, // Match the targetId with the user's id
@@ -315,6 +361,14 @@ export const updateMatchStatus = async (req, res) => {
       },
     });
 
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      middleName: user.middleName ? decryptData(user.middleName) : null,
+      email: user.email ? decryptData(user.email) : null,
+    };
+
     // Check if the user exists
     if (!user) {
       return res.status(404).json({ error: "User not found." });
@@ -327,6 +381,14 @@ export const updateMatchStatus = async (req, res) => {
       },
     });
 
+    const decryptedMatchedUser = {
+      ...matchedUser,
+      firstName: matchedUser.firstName ? decryptData(matchedUser.firstName) : null,
+      lastName: matchedUser.lastName ? decryptData(matchedUser.lastName) : null,
+      middleName: matchedUser.middleName ? decryptData(matchedUser.middleName) : null,
+      email: matchedUser.email ? decryptData(matchedUser.email) : null,
+    };
+
     // Check if the matched user exists
     if (!matchedUser) {
       return res.status(404).json({ error: "Matched user not found." });
@@ -336,8 +398,8 @@ export const updateMatchStatus = async (req, res) => {
     let match = await prisma.match.findFirst({
       where: {
         OR: [
-          { email1: user.email, email2: matchedUser.email },
-          { email1: matchedUser.email, email2: user.email },
+          { email1: decryptedUser.email, email2: decryptedMatchedUser.email },
+          { email1: decryptedMatchedUser.email, email2: decryptedUser.email },
         ],
       },
     });
@@ -346,8 +408,8 @@ export const updateMatchStatus = async (req, res) => {
     if (!match) {
       match = await prisma.match.create({
         data: {
-          email1: user.email,
-          email2: matchedUser.email,
+          email1: decryptedUser.email,
+          email2: decryptedMatchedUser.email,
           email1Status: status,
           email2Status: "pending", // Assuming the matched user needs to accept as well
         },
@@ -358,22 +420,22 @@ export const updateMatchStatus = async (req, res) => {
         where: { id: match.id },
         data: {
           email1Status:
-            match.email1 === user.email ? status : match.email1Status,
+            match.email1 === decryptedUser.email ? status : match.email1Status,
           email2Status:
-            match.email2 === user.email ? status : match.email2Status,
+            match.email2 === decryptedUser.email ? status : match.email2Status,
         },
       });
     }
 
     const today = new Date();
-    const userBirthday = new Date(user.birthday);
-    const matchedUserBirthday = new Date(matchedUser.birthday);
+    const userBirthday = new Date(decryptedUser.birthday);
+    const matchedUserBirthday = new Date(decryptedMatchedUser.birthday);
 
     if (status === "accepted") {
       await prisma.matchingAction.create({
         data: {
-          user1Id: user.id,
-          user2Id: matchedUser.id,
+          user1Id: decryptedUser.id,
+          user2Id: decryptedMatchedUser.id,
           matchingAction: "accepted"
         },
       });
@@ -382,48 +444,48 @@ export const updateMatchStatus = async (req, res) => {
         match.email2Status === "accepted"
       ) {
         await sendEmail({
-          email: user.personalEmail
-            ? user.personalEmail
-            : user.email,
+          email: decryptedUser.personalEmail
+            ? decryptedUser.personalEmail
+            : decryptedUser.email,
           subject: `Match Approved`,
           html: approvedMatchEmailHTML(
-            matchedUser.firstName,
-            matchedUser.avatar,
+            decryptedMatchedUser.firstName,
+            decryptedMatchedUser.avatar,
             today.getFullYear() - matchedUserBirthday.getFullYear(),
             match.score,
-            matchedUser.summary
+            decryptedMatchedUser.summary
           ),
         });
         await sendEmail({
-          email: matchedUser.personalEmail
-            ? matchedUser.personalEmail
-            : matchedUser.email,
+          email: decryptedMatchedUser.personalEmail
+            ? decryptedMatchedUser.personalEmail
+            : decryptedMatchedUser.email,
           subject: `Match Approved`,
           html: approvedMatchEmailHTML(
-            user.firstName,
-            user.avatar,
+            decryptedUser.firstName,
+            decryptedUser.avatar,
             today.getFullYear() - userBirthday.getFullYear(),
             match.score,
-            user.summary
+            decryptedUser.summary
           ),
         });
       }
     } else if (status === "rejected") {
       await prisma.matchingAction.create({
         data: {
-          user1Id: user.id,
-          user2Id: matchedUser.id,
+          user1Id: decryptedUser.id,
+          user2Id: decryptedMatchedUser.id,
           matchingAction: "rejected"
         },
       });
       await sendEmail({
-        email: matchedUser.personalEmail
-          ? matchedUser.personalEmail
-          : matchedUser.email,
-        subject: `${user.firstName} Match Declined or Expired`,
+        email: decryptedMatchedUser.personalEmail
+          ? decryptedMatchedUser.personalEmail
+          : decryptedMatchedUser.email,
+        subject: `${decryptedUser.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${user.firstName}`,
-          user.avatar,
+          `${decryptedUser.firstName}`,
+          decryptedUser.avatar,
           today.getFullYear() - userBirthday.getFullYear(),
           match.score
         ),
@@ -431,8 +493,8 @@ export const updateMatchStatus = async (req, res) => {
     } else if (status === "reignited") {
       await prisma.matchingAction.create({
         data: {
-          user1Id: user.id,
-          user2Id: matchedUser.id,
+          user1Id: decryptedUser.id,
+          user2Id: decryptedMatchedUser.id,
           matchingAction: "reignited"
         },
       });
@@ -440,24 +502,24 @@ export const updateMatchStatus = async (req, res) => {
         where: { id: 1 },
         select: { reigniteCost: true },
       });
-      const amountToReduce = user.balance < reigniteCost ? user.balance : reigniteCost;
+      const amountToReduce = decryptedUser.balance < reigniteCost ? decryptedUser.balance : reigniteCost;
       const amountToMakeExtraPayment =
-        user.balance < reigniteCost ? reigniteCost - user.balance : 0;
+        decryptedUser.balance < reigniteCost ? reigniteCost - decryptedUser.balance : 0;
 
       // Decrease the user's balance
       const updatedUser = await prisma.user.update({
-        where: { id: user.id },
-        data: { balance: user.balance - amountToReduce },
+        where: { id: decryptedUser.id },
+        data: { balance: decryptedUser.balance - amountToReduce },
       });
 
       // Save transaction to your database
       await prisma.userTransactions.create({
         data: {
-          userId: user.id,
-          paymentIntentId: `pi_b_${Date.now()}_${user.id}`,
+          userId: decryptedUser.id,
+          paymentIntentId: `pi_b_${Date.now()}_${decryptedUser.id}`,
           amount: Math.round(amountToReduce * 100),
           paymentMethod: "Balance",
-          description: `Reignite ${user.firstName} ${today.getFullYear() - userBirthday.getFullYear()}`,
+          description: `Reignite ${decryptedUser.firstName} ${today.getFullYear() - userBirthday.getFullYear()}`,
           status: "succeeded", // e.g., 'succeeded'
         },
       });
@@ -466,7 +528,7 @@ export const updateMatchStatus = async (req, res) => {
       if (amountToMakeExtraPayment > 0) {
         const customers = await stripe.customers.list({ limit: 1000 });
         const customer = customers.data.find(
-          (c) => Number(c.metadata.userId) === user.id
+          (c) => Number(c.metadata.userId) === decryptedUser.id
         );
 
         if (!customer) {
@@ -482,7 +544,7 @@ export const updateMatchStatus = async (req, res) => {
           amount: Math.round(amountToMakeExtraPayment * 100), // Amount in cents
           currency: "usd",
           customer: customer.id,
-          payment_method: user.paymentMethodId,
+          payment_method: decryptedUser.paymentMethodId,
           confirm: true, // Automatically confirm the payment
           automatic_payment_methods: {
             enabled: true,
@@ -496,7 +558,7 @@ export const updateMatchStatus = async (req, res) => {
         // Save transaction to your database
         await prisma.userTransactions.create({
           data: {
-            userId: user.id,
+            userId: decryptedUser.id,
             paymentIntentId: paymentIntent.id,
             paymentMethod: "Stripe",
             amount: paymentIntent.amount,
@@ -506,14 +568,14 @@ export const updateMatchStatus = async (req, res) => {
         });
       }
       await sendEmail({
-        email: matchedUser.personalEmail
-          ? matchedUser.personalEmail
-          : matchedUser.email,
-        subject: `Reignite ${matchedUser.firstName} ${matchedUser.lastName} ${
+        email: decryptedMatchedUser.personalEmail
+          ? decryptedMatchedUser.personalEmail
+          : decryptedMatchedUser.email,
+        subject: `Reignite ${decryptedMatchedUser.firstName} ${decryptedMatchedUser.lastName} ${
           today.getFullYear() - matchedUserBirthday.getFullYear()
         }`,
         html: reigniteMatchEmailHTML(
-          `${matchedUser.firstName} ${matchedUser.lastName}`,
+          `${decryptedMatchedUser.firstName} ${decryptedMatchedUser.lastName}`,
           today.getFullYear() - matchedUserBirthday.getFullYear()
         ),
       });
@@ -560,16 +622,32 @@ export const addMatchingAction = async (req, res) => {
       where: { id: parseInt(user1Id, 10) },
     });
 
+    const decryptedUser1 = {
+      ...user1,
+      firstName: user1.firstName ? decryptData(user1.firstName) : null,
+      lastName: user1.lastName ? decryptData(user1.lastName) : null,
+      middleName: user1.middleName ? decryptData(user1.middleName) : null,
+      email: user1.email ? decryptData(user1.email) : null,
+    };
+
     const user2 = await prisma.user.findUnique({
       where: { id: parseInt(user2Id, 10) },
     });
+
+    const decryptedUser2 = {
+      ...user2,
+      firstName: user2.firstName ? decryptData(user2.firstName) : null,
+      lastName: user2.lastName ? decryptData(user2.lastName) : null,
+      middleName: user2.middleName ? decryptData(user2.middleName) : null,
+      email: user2.email ? decryptData(user2.email) : null,
+    };
 
     if (!user1 || !user2) {
       return res.status(404).json({ error: "One or more users not found" });
     }
 
-    const user1Email = user1.email;
-    const user2Email = user2.email;
+    const user1Email = decryptedUser1.email;
+    const user2Email = decryptedUser2.email;
 
     // Create a new matching action record
     const newMatchingAction = await prisma.matchingAction.create({
@@ -648,12 +726,17 @@ export const getMatchedUserData = async (req, res) => {
       select: { email: true }, // Only fetch the email
     });
 
+    const decryptedUser = {
+      ...user,
+      email: user.email ? decryptData(user.email) : null,
+    };
+
     // Check if the user exists
     if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    const userEmail = user.email;
+    const userEmail = decryptedUser.email;
 
     // Step 2: Fetch all matches where the user's email is involved
     const matches = await prisma.match.findMany({
@@ -687,6 +770,13 @@ export const getMatchedUserData = async (req, res) => {
           },
         });
 
+        const decryptedMatchedUser = {
+          ...matchedUser,
+          firstName: matchedUser.firstName ? decryptData(matchedUser.firstName) : null,
+          lastName: matchedUser.lastName ? decryptData(matchedUser.lastName) : null,
+          middleName: matchedUser.middleName ? decryptData(matchedUser.middleName) : null,
+        };
+
         if (!matchedUser) {
           return null; // Match exists but the user does not, avoid breaking
         }
@@ -695,7 +785,7 @@ export const getMatchedUserData = async (req, res) => {
         const matchingActions = await prisma.matchingAction.findMany({
           where: {
             user1Id: numericUserId,
-            user2Id: matchedUser.id,
+            user2Id: decryptedMatchedUser.id,
           },
         });
 
@@ -713,8 +803,8 @@ export const getMatchedUserData = async (req, res) => {
 
         // Format the resulting matched data
         return {
-          name: `${matchedUser.firstName} ${matchedUser.middleName || ""} ${
-            matchedUser.lastName
+          name: `${decryptedMatchedUser.firstName} ${decryptedMatchedUser.middleName || ""} ${
+            decryptedMatchedUser.lastName
           }`.trim(),
           score: match.score || null,
           matchedDate: match.createdAt?.toISOString() || null,
@@ -755,41 +845,57 @@ cron.schedule("0 * * * *", async () => {
     for (const match of expiredMatches) {
       const existingUser1 = await prisma.user.findUnique({
         where: {
-          email: email1,
+          email: encryptData(email1),
         },
       });
+
+      const decryptedExistingUser1 = {
+        ...existingUser1,
+        firstName: existingUser1.firstName ? decryptData(existingUser1.firstName) : null,
+        lastName: existingUser1.lastName ? decryptData(existingUser1.lastName) : null,
+        middleName: existingUser1.middleName ? decryptData(existingUser1.middleName) : null,
+        email: existingUser1.email ? decryptData(existingUser1.email) : null,
+      };
 
       const existingUser2 = await prisma.user.findUnique({
         where: {
-          email: email2,
+          email: encryptData(email2),
         },
       });
 
+      const decryptedExistingUser2 = {
+        ...existingUser2,
+        firstName: existingUser2.firstName ? decryptData(existingUser2.firstName) : null,
+        lastName: existingUser2.lastName ? decryptData(existingUser2.lastName) : null,
+        middleName: existingUser2.middleName ? decryptData(existingUser2.middleName) : null,
+        email: existingUser2.email ? decryptData(existingUser2.email) : null,
+      };
+
       const today = new Date();
-      const user1Birthday = new Date(existingUser1.birthday);
-      const user2Birthday = new Date(existingUser2.birthday);
+      const user1Birthday = new Date(decryptedExistingUser1.birthday);
+      const user2Birthday = new Date(decryptedExistingUser2.birthday);
 
       await sendEmail({
-        email: existingUser1.personalEmail
-          ? existingUser1.personalEmail
-          : existingUser1.email,
-        subject: `${existingUser2.firstName} Match Declined or Expired`,
+        email: decryptedExistingUser1.personalEmail
+          ? decryptedExistingUser1.personalEmail
+          : decryptedExistingUser1.email,
+        subject: `${decryptedExistingUser2.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${existingUser2.firstName}`,
-          existingUser2.avatar,
+          `${decryptedExistingUser2.firstName}`,
+          decryptedExistingUser2.avatar,
           today.getFullYear() - user2Birthday.getFullYear(),
           match.score
         ),
       });
 
       await sendEmail({
-        email: existingUser2.personalEmail
-          ? existingUser2.personalEmail
-          : existingUser2.email,
-        subject: `${existingUser1.firstName} Match Declined or Expired`,
+        email: decryptedExistingUser2.personalEmail
+          ? decryptedExistingUser2.personalEmail
+          : decryptedExistingUser2.email,
+        subject: `${decryptedExistingUser1.firstName} Match Declined or Expired`,
         html: declinedMatchEmailHTML(
-          `${existingUser1.firstName}`,
-          existingUser1.avatar,
+          `${decryptedExistingUser1.firstName}`,
+          decryptedExistingUser1.avatar,
           today.getFullYear() - user1Birthday.getFullYear(),
           match.score
         ),

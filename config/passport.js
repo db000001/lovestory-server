@@ -1,5 +1,6 @@
 import { PrismaClient } from "@prisma/client";
 import { Strategy as JwtStrategy, ExtractJwt } from "passport-jwt";
+import { decryptData } from "../utils/encryption.js";
 
 const prisma = new PrismaClient();
 
@@ -16,8 +17,15 @@ const passportJWTStrategy = new JwtStrategy(opts, async (jwt_payload, done) => {
     });
 
     if (user) {
+      const decryptedUser = {
+        ...user,
+        firstName: user.firstName ? decryptData(user.firstName) : null,
+        lastName: user.lastName ? decryptData(user.lastName) : null,
+        middleName: user.middleName ? decryptData(user.middleName) : null,
+        email: user.email ? decryptData(user.email) : null,
+      };
       // Return the user if found
-      return done(null, user);
+      return done(null, decryptedUser);
     } else {
       // Return false if user not found
       return done(null, false);

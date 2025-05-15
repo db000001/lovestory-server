@@ -9,6 +9,7 @@ import {
   informationUpdateEmailHTML,
   userQuestionCompletedEmailHTML,
 } from "../utils/emailTemplate.js";
+import { decryptData, encryptData } from "../utils/encryption.js";
 
 const prisma = new PrismaClient();
 
@@ -25,6 +26,7 @@ export const createUser = async (req, res) => {
     middleName,
     lastName,
     email,
+    personalEmail,
     password,
     birthday,
     sex,
@@ -53,10 +55,11 @@ export const createUser = async (req, res) => {
     // Create a new user with the college name
     const newUser = await prisma.user.create({
       data: {
-        firstName,
-        middleName,
-        lastName,
-        email,
+        firstName: encryptData(firstName),
+        middleName: encryptData(middleName),
+        lastName: encryptData(lastName),
+        email: encryptData(email),
+        personalEmail: encryptData(personalEmail),
         password: hashedNewPassword,
         birthday,
         sex,
@@ -116,7 +119,31 @@ export const getAllUsers = async (req, res) => {
         paymentMethodId: true,
       },
     });
-    res.status(200).json(users);
+
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+          personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+          personalEmail: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
+    res.status(200).json(decryptedUsers);
   } catch (error) {
     console.log("error =>", error);
     res.status(500).json({ error: "Failed to fetch users" });
@@ -148,7 +175,30 @@ export const getSomeUsers = async (req, res) => {
       },
     });
 
-    res.status(200).json(users);
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+          personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+          personalEmail: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
+    res.status(200).json(decryptedUsers);
   } catch (error) {
     console.error("Error fetching users by IDs:", error);
     res.status(500).json({ error: "Failed to fetch users" });
@@ -162,7 +212,30 @@ export const getBlockedUsers = async (req, res) => {
       where: { status: "inactive" },
     });
 
-    const blockedUsers = users.map((user) => ({
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+          personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+          personalEmail: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
+    const blockedUsers = decryptedUsers.map((user) => ({
       id: user.id,
       user: user.firstName + " " + user.lastName,
       email: user.email,
@@ -196,7 +269,7 @@ export const setUsersInactive = async (req, res) => {
     try {
       // Check if user exists
       const user = await prisma.user.findUnique({
-        where: { email },
+        where: { email: encryptData(email) },
       });
 
       if (!user) {
@@ -205,7 +278,7 @@ export const setUsersInactive = async (req, res) => {
 
       // Update user status to inactive
       const updatedUser = await prisma.user.update({
-        where: { email },
+        where: { email: encryptData(email) },
         data: { status: "inactive" },
       });
 
@@ -283,8 +356,29 @@ export const getUsersView = async (req, res) => {
       },
     });
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+          email: user.email ? decryptData(user.email) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+          email: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     const results = await Promise.all(
-      users.map(async (user) => {
+      decryptedUsers.map(async (user) => {
         const fullName = `${user.firstName} ${user.lastName}`;
 
         // Last active date
@@ -415,9 +509,18 @@ export const getUserById = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (!user.paymentMethodId) {
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      middleName: user.middleName ? decryptData(user.middleName) : null,
+      email: user.email ? decryptData(user.email) : null,
+      personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+    };
+
+    if (!decryptedUser.paymentMethodId) {
       return res.status(200).json({
-        ...user,
+        ...decryptedUser,
         cardBrand: null,
         cardLast4Number: null,
       });
@@ -425,26 +528,26 @@ export const getUserById = async (req, res) => {
 
     // Retrieve the payment method from Stripe
     const paymentMethod = await stripe.paymentMethods.retrieve(
-      user.paymentMethodId
+      decryptedUser.paymentMethodId
     );
 
     // Check if payment method exists and is a Mastercard
     if (!paymentMethod) {
       await prisma.user.update({
-        where: { id: user.id },
+        where: { id: decryptedUser.id },
         data: {
           paymentMethodId: null,
         },
       });
       return res.status(200).json({
-        ...user,
+        ...decryptedUser,
         cardBrand: null,
         cardLast4Number: null,
       });
     }
 
     res.status(200).json({
-      ...user,
+      ...decryptedUser,
       cardBrand: paymentMethod ? paymentMethod.card.brand : null,
       cardLast4Number: paymentMethod ? paymentMethod.card.last4 : null,
     });
@@ -460,7 +563,7 @@ export const getUserByEmail = async (req, res) => {
   try {
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: email }, { personalEmail: email }],
+        OR: [{ email: encryptData(email) }, { personalEmail: encryptData(email) }],
       },
       select: {
         id: true,
@@ -495,9 +598,18 @@ export const getUserByEmail = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
-    if (!user.paymentMethodId) {
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      middleName: user.middleName ? decryptData(user.middleName) : null,
+      email: user.email ? decryptData(user.email) : null,
+      personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+    };
+
+    if (!decryptedUser.paymentMethodId) {
       return res.status(200).json({
-        ...user,
+        ...decryptedUser,
         cardBrand: null,
         cardLast4Number: null,
       });
@@ -505,7 +617,7 @@ export const getUserByEmail = async (req, res) => {
 
     // Retrieve the payment method from Stripe
     const paymentMethod = await stripe.paymentMethods.retrieve(
-      user.paymentMethodId
+      decryptedUser.paymentMethodId
     );
 
     // Check if payment method exists and is a Mastercard
@@ -517,14 +629,14 @@ export const getUserByEmail = async (req, res) => {
         },
       });
       return res.status(200).json({
-        ...user,
+        ...decryptedUser,
         cardBrand: null,
         cardLast4Number: null,
       });
     }
 
     res.status(200).json({
-      ...user,
+      ...decryptedUser,
       cardBrand: paymentMethod ? paymentMethod.card.brand : null,
       cardLast4Number: paymentMethod ? paymentMethod.card.last4 : null,
     });
@@ -574,12 +686,21 @@ export const getMatchedUserById = async (req, res) => {
       return res.status(404).json({ error: "User not found" });
     }
 
+    const decryptedUser = {
+      ...user,
+      firstName: user.firstName ? decryptData(user.firstName) : null,
+      lastName: user.lastName ? decryptData(user.lastName) : null,
+      middleName: user.middleName ? decryptData(user.middleName) : null,
+      email: user.email ? decryptData(user.email) : null,
+      personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
+    };
+
     // Fetch the match data
     const match = await prisma.match.findFirst({
       where: {
         OR: [
-          { email1: user.email, email2: req.user.email },
-          { email1: req.user.email, email2: user.email },
+          { email1: decryptedUser.email, email2: req.user.email },
+          { email1: req.user.email, email2: decryptedUser.email },
         ],
       },
       select: {
@@ -617,7 +738,7 @@ export const getMatchedUserById = async (req, res) => {
       );
       // Combine user data with match data
       return res.status(200).json({
-        user,
+        decryptedUser,
         match: {
           ...match,
           expTimeLeft: matchExpiration - new Date(),
@@ -629,7 +750,7 @@ export const getMatchedUserById = async (req, res) => {
     );
     // Combine user data with match data
     return res.status(200).json({
-      user,
+      decryptedUser,
       match: {
         ...match,
         expTimeLeft: matchExpiration - new Date(),
@@ -682,10 +803,10 @@ export const updateUser = async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(userId) },
       data: {
-        firstName,
-        lastName,
-        email,
-        personalEmail,
+        firstName: encryptData(firstName),
+        lastName: encryptData(lastName),
+        email: encryptData(email),
+        personalEmail: encryptData(personalEmail),
         birthday,
         avatar,
         discussionAvatar,
@@ -929,7 +1050,29 @@ export const updateSummary = async (req, res) => {
 // Create a new UserFilter
 export const createOrUpdateUserFilter = async (req, res) => {
   try {
-    const { userId, ...otherFields } = req.body; // Destructure userId and other fields from the request body
+    const {
+      userId,
+      firstName,
+      middleName,
+      lastName,
+      age,
+      sex,
+      eyeColor,
+      currentHairColor,
+      naturalHairColor,
+      height,
+      weight,
+      bodyType,
+      religiousAffiliation,
+      ethnicity,
+      ethnicSubgroup,
+      currentCollege,
+      currentState,
+      homeState,
+      politicalViews,
+      typeOfRelationship,
+      numberOfChildren,
+    } = req.body; // Destructure userId and other fields from the request body
 
     // Validate that userId is provided and is a valid number
     if (!userId || isNaN(Number(userId))) {
@@ -942,11 +1085,49 @@ export const createOrUpdateUserFilter = async (req, res) => {
     const userFilter = await prisma.userFilters.upsert({
       where: { userId: Number(userId) }, // Ensure userId uniqueness
       update: {
-        ...otherFields, // If userId exists, update the specified fields
+        firstName: encryptData(firstName),
+        middleName: encryptData(middleName),
+        lastName: encryptData(lastName),
+        age: encryptData(age),
+        sex: encryptData(sex),
+        eyeColor: encryptData(eyeColor),
+        currentHairColor: encryptData(currentHairColor),
+        naturalHairColor: encryptData(naturalHairColor),
+        height: encryptData(height),
+        weight: encryptData(weight),
+        bodyType: encryptData(bodyType),
+        religiousAffiliation: encryptData(religiousAffiliation),
+        ethnicity: encryptData(ethnicity),
+        ethnicSubgroup: encryptData(ethnicSubgroup),
+        currentCollege: encryptData(currentCollege),
+        currentState: encryptData(currentState),
+        homeState: encryptData(homeState),
+        politicalViews: encryptData(politicalViews),
+        typeOfRelationship: encryptData(typeOfRelationship),
+        numberOfChildren: encryptData(numberOfChildren),
       },
       create: {
         userId: Number(userId), // If it doesn't exist, create a new record
-        ...otherFields,
+        firstName: encryptData(firstName),
+        middleName: encryptData(middleName),
+        lastName: encryptData(lastName),
+        age: encryptData(age),
+        sex: encryptData(sex),
+        eyeColor: encryptData(eyeColor),
+        currentHairColor: encryptData(currentHairColor),
+        naturalHairColor: encryptData(naturalHairColor),
+        height: encryptData(height),
+        weight: encryptData(weight),
+        bodyType: encryptData(bodyType),
+        religiousAffiliation: encryptData(religiousAffiliation),
+        ethnicity: encryptData(ethnicity),
+        ethnicSubgroup: encryptData(ethnicSubgroup),
+        currentCollege: encryptData(currentCollege),
+        currentState: encryptData(currentState),
+        homeState: encryptData(homeState),
+        politicalViews: encryptData(politicalViews),
+        typeOfRelationship: encryptData(typeOfRelationship),
+        numberOfChildren: encryptData(numberOfChildren),
       },
     });
 
@@ -999,9 +1180,34 @@ export const getUserFilterById = async (req, res) => {
       });
     }
 
+    const decryptedUserFilter = {
+      id: userFilter.id,
+      userId: userFilter.userId,
+      firstName: decryptData(userFilter.firstName),
+      middleName: decryptData(userFilter.middleName),
+      lastName: decryptData(userFilter.lastName),
+      age: decryptData(userFilter.age),
+      sex: decryptData(userFilter.sex),
+      eyeColor: decryptData(userFilter.eyeColor),
+      currentHairColor: decryptData(userFilter.currentHairColor),
+      naturalHairColor: decryptData(userFilter.naturalHairColor),
+      height: decryptData(userFilter.height),
+      weight: decryptData(userFilter.weight),
+      bodyType: decryptData(userFilter.bodyType),
+      religiousAffiliation: decryptData(userFilter.religiousAffiliation),
+      ethnicity: decryptData(userFilter.ethnicity),
+      ethnicSubgroup: decryptData(userFilter.ethnicSubgroup),
+      currentCollege: decryptData(userFilter.currentCollege),
+      currentState: decryptData(userFilter.currentState),
+      homeState: decryptData(userFilter.homeState),
+      politicalViews: decryptData(userFilter.politicalViews),
+      typeOfRelationship: decryptData(userFilter.typeOfRelationship),
+      numberOfChildren: decryptData(userFilter.numberOfChildren),
+    };
+
     return res.status(200).json({
       message: "User filter retrieved successfully.",
-      userFilter,
+      userFilter: decryptedUserFilter,
     });
   } catch (error) {
     console.error("Error retrieving user filter:", error);
@@ -1159,11 +1365,11 @@ export const createUserQA = async (req, res) => {
       // Check indices and set the answer based on the user information
       if (data.qIndex === 0 && data.sIndex === 0) {
         if (data.pIndex === 0) {
-          updatedData.firstName = data.answer; // Use user's firstName
+          updatedData.firstName = encryptData(data.answer); // Use user's firstName
         } else if (data.pIndex === 1) {
-          updatedData.lastName = data.answer; // Use user's lastName
+          updatedData.lastName = encryptData(data.answer); // Use user's lastName
         } else if (data.pIndex === 2) {
-          updatedData.middleName = data.answer; // Use user's middleName
+          updatedData.middleName = encryptData(data.answer); // Use user's middleName
         }
       } else if (data.qIndex === 0 && data.sIndex === 1 && data.pIndex === 0) {
         updatedData.birthday = data.answer; // Use user's birthday
@@ -1190,7 +1396,7 @@ export const createUserQA = async (req, res) => {
     // Prepare an array to hold the new UserQA records
     const userQAsToCreate = qa.map((data) => ({
       userId: Number(userId),
-      answer: data.answer, // Default to provided answer
+      answer: encryptData(data.answer), // Default to provided answer
       qIndex: data.qIndex,
       sIndex: data.sIndex,
       pIndex: data.pIndex,
@@ -1208,10 +1414,10 @@ export const createUserQA = async (req, res) => {
       subject: `${user.email} ${updatedData.firstName} ${updatedData.middleName} ${updatedData.lastName} Registration`,
       html: userQuestionCompletedEmailHTML(
         qa,
-        user.email,
-        updatedData.firstName,
-        updatedData.middleName,
-        updatedData.lastName
+        decryptData(user.email),
+        decryptData(updatedData.firstName),
+        decryptData(updatedData.middleName),
+        decryptData(updatedData.lastName)
       ),
     });
 
@@ -1256,8 +1462,9 @@ export const createUserQA = async (req, res) => {
       createdUserQAs,
       user: {
         userId: user.id,
-        email: user.email,
-        fullName: user.firstName + " " + user.lastName,
+        email: decryptData(user.email),
+        fullName:
+          decryptData(user.firstName) + " " + decryptData(user.lastName),
         emailVerified: user.emailVerified,
         role: user.role,
       },
@@ -1296,11 +1503,11 @@ export const updateUserQA = async (req, res) => {
       // Check indices and set the answer based on the user information
       if (data.qIndex === 0 && data.sIndex === 0) {
         if (data.pIndex === 0) {
-          updatedData.firstName = data.answer; // Use user's firstName
+          updatedData.firstName = encryptData(data.answer); // Use user's firstName
         } else if (data.pIndex === 1) {
-          updatedData.lastName = data.answer; // Use user's lastName
+          updatedData.lastName = encryptData(data.answer); // Use user's lastName
         } else if (data.pIndex === 2) {
-          updatedData.middleName = data.answer; // Use user's middleName
+          updatedData.middleName = encryptData(data.answer); // Use user's middleName
         }
       } else if (data.qIndex === 0 && data.sIndex === 1 && data.pIndex === 0) {
         updatedData.birthday = new Date(data.answer); // Use user's birthday
@@ -1327,7 +1534,7 @@ export const updateUserQA = async (req, res) => {
     // Prepare an array to hold the new UserQA records
     const userQAsToCreate = qa.map((data) => ({
       userId: Number(userId),
-      answer: data.answer, // Default to provided answer
+      answer: encryptData(data.answer), // Default to provided answer
       qIndex: data.qIndex,
       sIndex: data.sIndex,
       pIndex: data.pIndex,
@@ -1342,7 +1549,9 @@ export const updateUserQA = async (req, res) => {
 
     if (shopItems.length > 0) {
       await sendEmail({
-        email: user.personalEmail ? user.personalEmail : user.email,
+        email: decryptData(user.personalEmail)
+          ? decryptData(user.personalEmail)
+          : decryptData(user.email),
         subject: `Information Change Purchase`,
         html: informationUpdateEmailHTML(qa, shopItems),
       });
@@ -1376,7 +1585,21 @@ export const getUserQAByUserId = async (req, res) => {
     const userQA = await prisma.userQA.findMany({
       where: { userId },
     });
-    res.status(200).json(userQA);
+    const decryptedUserQA = userQA.map((qa) => {
+      try {
+        return {
+          ...qa,
+          answer: qa.answer ? decryptData(qa.answer) : null, // Only decrypt if answer exists
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for QA ID ${qa.id}:`, decryptError);
+        return {
+          ...qa,
+          answer: "[DECRYPTION FAILED]", // Handle decryption errors gracefully
+        };
+      }
+    });
+    res.status(200).json(decryptedUserQA);
   } catch (error) {
     console.error("Error fetching UserQA by ID:", error);
     res.status(500).json({ error: error.message });

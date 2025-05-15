@@ -361,6 +361,25 @@ export const getVideosDetailViewById = async (req, res) => {
       },
     });
 
+    const decryptedPosterUsers = posterUsers.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+          middleName: user.middleName ? decryptData(user.middleName) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+          middleName: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Define the emotion counts structure
     const emotionCountMapTemplate = {
       heart: 0,
@@ -394,7 +413,7 @@ export const getVideosDetailViewById = async (req, res) => {
 
     // Map user details and emotion counts to their corresponding posts
     const commentsWithUserInfo = relatedComments.map((post) => {
-      const user = posterUsers.find((u) => u.id === post.userId);
+      const user = decryptedPosterUsers.find((u) => u.id === post.userId);
       const emotions = emotionCountByPost[post.id] || emotionCountMapTemplate;
       return {
         ...post,
@@ -509,12 +528,30 @@ export const getVideoDetail = async (req, res) => {
               avatar: true,
               sex: true,
               birthday: true,
+              college: true,
             },
           })
         : [];
 
+    const decryptedUsers = users.map((user) => {
+      try {
+        return {
+          ...user,
+          firstName: user.firstName ? decryptData(user.firstName) : null,
+          lastName: user.lastName ? decryptData(user.lastName) : null,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        return {
+          ...user,
+          firstName: "[DECRYPTION FAILED]",
+          lastName: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // Constructing a map for user data for quick lookup
-    const userMap = users.reduce((acc, user) => {
+    const userMap = decryptedUsers.reduce((acc, user) => {
       acc[user.id] = user;
       return acc;
     }, {});
