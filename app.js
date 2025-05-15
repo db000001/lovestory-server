@@ -22,7 +22,7 @@ import questionRouter from "./routes/question.routes.js";
 
 import passportJWTStrategy from "./config/passport.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import { encryptData } from "./utils/encryption.js";
+import { decryptData, encryptData } from "./utils/encryption.js";
 
 const PORT = process.env.PORT || 3001;
 
@@ -39,7 +39,9 @@ passport.use(passportJWTStrategy);
 
 app.use("/api/test", async (req, res) => {
   const encryptedEmail = encryptData("Doe");
+  const decryptedEmail = decryptData(encryptedEmail);
   console.log("encryptedEmail", encryptedEmail);
+  console.log("decryptedEmail", decryptedEmail);
   res.status(200).json({ message: "Success!" });
 });
 app.use("/api/auth", authRouter);

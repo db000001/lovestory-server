@@ -12,8 +12,8 @@ model User {
   firstName                   String           @map("first_name") @db.Text
   middleName                  String?          @map("middle_name") @db.Text
   lastName                    String           @map("last_name") @db.Text
-  email                       String           @unique @db.VarChar(1500)
-  personalEmail               String?          @unique @map("personal_email") @db.VarChar(1500)
+  email                       String           @unique @db.VarChar(500)
+  personalEmail               String?          @unique @map("personal_email") @db.VarChar(500)
   birthday                    String?          @db.VarChar(255)
   sex                         user_tbl_sex?
   avatar                      String?          @db.VarChar(255)

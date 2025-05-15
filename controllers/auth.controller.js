@@ -95,7 +95,7 @@ export const register = async (req, res) => {
 export const login = async (req, res) => {
   try {
     const { email, password, session, timezone, ipv4, ipv6 } = req.body;
-
+    console.log("encryptedEmail =>", encryptData(email));
     // Find the user by email
     const existingUser = await prisma.user.findUnique({
       where: {
