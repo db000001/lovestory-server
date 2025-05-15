@@ -87,7 +87,7 @@ export const getVideosView = async (req, res) => {
             videoId: video.id,
           },
         });
-        
+
         // Return a new object with the likes property added
         return {
           ...video,
@@ -118,7 +118,24 @@ export const getVideosViewByCollection = async (req, res) => {
       return res.status(404).json({ message: "Video not found" });
     }
 
-    return res.status(200).json(videos);
+    // Use Promise.all to await all async operations in the map
+    const videosWithLikes = await Promise.all(
+      videos.map(async (video) => {
+        const totalLikes = await prisma.userVideoLikes.count({
+          where: {
+            videoId: video.id,
+          },
+        });
+
+        // Return a new object with the likes property added
+        return {
+          ...video,
+          likes: totalLikes,
+        };
+      })
+    );
+
+    return res.status(200).json(videosWithLikes);
   } catch (error) {
     return res.status(500).json({
       message: "Error fetching video",
@@ -398,7 +415,10 @@ export const getVideosDetailViewById = async (req, res) => {
           middleName: user.middleName ? decryptData(user.middleName) : null,
         };
       } catch (decryptError) {
-        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        console.error(
+          `Decryption failed for user ID ${user.id}:`,
+          decryptError
+        );
         return {
           ...user,
           firstName: "[DECRYPTION FAILED]",
@@ -449,7 +469,7 @@ export const getVideosDetailViewById = async (req, res) => {
         // emotionCounts: emotionCountByPost[post.id] || {
         //   ...emotionCountMapTemplate,
         // }, // Get counts or default
-        ...emotions
+        ...emotions,
       };
     });
 
@@ -570,7 +590,10 @@ export const getVideoDetail = async (req, res) => {
           lastName: user.lastName ? decryptData(user.lastName) : null,
         };
       } catch (decryptError) {
-        console.error(`Decryption failed for user ID ${user.id}:`, decryptError);
+        console.error(
+          `Decryption failed for user ID ${user.id}:`,
+          decryptError
+        );
         return {
           ...user,
           firstName: "[DECRYPTION FAILED]",
