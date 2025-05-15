@@ -218,9 +218,6 @@ export const getMatchedUsersByUserId = async (req, res) => {
 
     const decryptedUser = {
       ...user,
-      firstName: user.firstName ? decryptData(user.firstName) : null,
-      lastName: user.lastName ? decryptData(user.lastName) : null,
-      middleName: user.middleName ? decryptData(user.middleName) : null,
       email: user.email ? decryptData(user.email) : null,
     };
 
