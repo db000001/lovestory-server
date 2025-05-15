@@ -150,8 +150,38 @@ export const getAllMatches = async (req, res) => {
 // Get matches view
 export const getMatchesView = async (req, res) => {
   try {
-    const matches = await prisma.matchesView.findMany();
-    res.json(matches);
+    const matches = await prisma.match.findMany();
+    
+    if (!matches) {
+      return res.status(404).json({ error: "Matches not found" });
+    }
+
+    const matchesView = await Promise.all(
+      matches.map(async (match) => {
+        const user1 = await prisma.user.findUnique({
+          where: {
+            email: encryptData(match.email1),
+          },
+        });
+
+        const user2 = await prisma.user.findUnique({
+          where: {
+            email: encryptData(match.email2),
+          },
+        });
+
+        // Return a new object with the likes property added
+        return {
+          ...match,
+          user1Id: user1.id,
+          user1Name: decryptData(user1.firstName) + ' ' + decryptData(user1.lastName),
+          user2Id: user2.id,
+          user2Name: decryptData(user2.firstName) + ' ' + decryptData(user2.lastName),
+        };
+      })
+    );
+
+    res.json(matchesView);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

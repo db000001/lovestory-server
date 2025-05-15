@@ -1175,8 +1175,9 @@ export const getUserFilterById = async (req, res) => {
     });
 
     if (!userFilter) {
-      return res.status(404).json({
+      return res.status(200).json({
         message: "User filter not found.",
+        userFilter: null
       });
     }
 
