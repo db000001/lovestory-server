@@ -88,6 +88,7 @@ export const register = async (req, res) => {
       .status(201)
       .json({ message: "A new User created", userId: newUser.id });
   } catch (error) {
+    console.log(error);
     return res.status(500).json({ message: error.message });
   }
 };
