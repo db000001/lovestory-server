@@ -155,6 +155,26 @@ export const getCollectionById = async (req, res) => {
       return res.status(404).json({ message: "Collection not found" });
     }
 
+    const videos = await prisma.video.findMany({
+      where: {
+        collectionId: collection.id,
+      },
+    });
+
+    // Use Promise.all to await all like counts
+    const videoLikes = await Promise.all(
+      videos.map(async (video) => {
+        return await prisma.userVideoLikes.count({
+          where: {
+            videoId: video.id,
+          },
+        });
+      })
+    );
+
+    // Sum all likes
+    const totalLikes = videoLikes.reduce((sum, likes) => sum + likes, 0);
+
     // Fetch visibility values for the specific collection ID
     const visibilityValues = await prisma.collectionVisibility.findMany({
       where: { collectionId: Number(id) },
@@ -162,6 +182,7 @@ export const getCollectionById = async (req, res) => {
 
     return res.status(200).json({
       ...collection,
+      likes: totalLikes,
       visibilityValues, // Add visibility values to the response
     });
   } catch (error) {

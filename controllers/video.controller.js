@@ -359,7 +359,7 @@ export const getVideosDetailViewById = async (req, res) => {
     // Fetching total likes count from user_video_likes table
     const totalLikes = await prisma.userVideoLikes.count({
       where: {
-        videoId: videoId,
+        videoId: Number(videoId),
       },
     });
 
