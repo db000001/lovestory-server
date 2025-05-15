@@ -102,28 +102,36 @@ export const getCollectionsView = async (req, res) => {
     // Fetch all collections from the collections_view table
     const collectionsView = await prisma.collectionsView.findMany();
 
-    const collectionsViewWithLikes = collectionsView.map(async (collection) => {
-      const videos = await prisma.video.findMany({
-        where: {
-          collectionId: collection.id,
-        },
-      });
-
-      let videoLikes = 0;
-
-      videos.forEach(async (video) => {
-        // Fetching total likes count from user_video_likes table
-        const likes = await prisma.userVideoLikes.count({
+    // Use Promise.all to await all async operations in the map
+    const collectionsViewWithLikes = await Promise.all(
+      collectionsView.map(async (collection) => {
+        const videos = await prisma.video.findMany({
           where: {
-            videoId: video.id,
+            collectionId: collection.id,
           },
         });
 
-        videoLikes += likes;
-      });
+        // Use Promise.all to await all like counts
+        const videoLikes = await Promise.all(
+          videos.map(async (video) => {
+            return await prisma.userVideoLikes.count({
+              where: {
+                videoId: video.id,
+              },
+            });
+          })
+        );
 
-      collection.likes = videoLikes;
-    });
+        // Sum all likes
+        const totalLikes = videoLikes.reduce((sum, likes) => sum + likes, 0);
+
+        // Return the collection with the likes property
+        return {
+          ...collection,
+          likes: totalLikes,
+        };
+      })
+    );
 
     return res.status(200).json(collectionsViewWithLikes);
   } catch (error) {
