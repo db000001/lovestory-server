@@ -84,7 +84,25 @@ export const getDiscussionsView = async (req, res) => {
     const discussions = await prisma.discussionsView.findMany({
       where: { pId: 0 }
     });
-    res.status(200).json(discussions);
+
+    const decryptedDiscussions = discussions.map((discussion) => {
+      try {
+        let firstName = decryptData(discussion.user.split(" ")[0]);
+        let lastName = decryptData(discussion.user.split(" ")[1]);
+        return {
+          ...discussion,
+          user: firstName + lastName,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${discussion.id}:`, decryptError);
+        return {
+          ...discussion,
+          user: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
+    res.status(200).json(decryptedDiscussions);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
