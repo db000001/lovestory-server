@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { decryptData } from "../utils/encryption";
 
 const prisma = new PrismaClient();
 
@@ -77,7 +78,18 @@ export const getVideos = async (req, res) => {
 export const getVideosView = async (req, res) => {
   try {
     const videos = await prisma.videosView.findMany();
-    return res.status(200).json(videos);
+
+    const videosWithLikes = videos.map(async (video) => {
+      // Fetching total likes count from user_video_likes table
+      const totalLikes = await prisma.userVideoLikes.count({
+        where: {
+          videoId: video.id,
+        },
+      });
+  
+      video.likes = totalLikes;
+    });
+    return res.status(200).json(videosWithLikes);
   } catch (error) {
     return res.status(500).json({
       message: "Error fetching videos view",
@@ -329,13 +341,22 @@ export const getVideosDetailViewById = async (req, res) => {
 
   try {
     // Fetch the video details
-    const video = await prisma.videosDetailView.findUnique({
+    let video = await prisma.videosDetailView.findUnique({
       where: { id: Number(videoId) },
     });
 
     if (!video) {
       return res.status(404).json({ message: "Video not found" });
     }
+
+    // Fetching total likes count from user_video_likes table
+    const totalLikes = await prisma.userVideoLikes.count({
+      where: {
+        videoId: videoId,
+      },
+    });
+
+    video.likes = totalLikes;
 
     // Fetch related video comments (posts)
     const relatedComments = await prisma.post.findMany({

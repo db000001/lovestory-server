@@ -1411,7 +1411,7 @@ export const createUserQA = async (req, res) => {
 
     await sendEmail({
       email: "noreply@lovestory.ai",
-      subject: `${user.email} ${updatedData.firstName} ${updatedData.middleName} ${updatedData.lastName} Registration`,
+      subject: `${decryptData(user.email)} ${decryptData(updatedData.firstName)} ${decryptData(updatedData.middleName)} ${decryptData(updatedData.lastName)} Registration`,
       html: userQuestionCompletedEmailHTML(
         qa,
         decryptData(user.email),
@@ -1947,9 +1947,9 @@ export const sendUserChatNotificationEmail = async (req, res) => {
     }
 
     await sendEmail({
-      email: receiver.personalEmail ? receiver.personalEmail : receiver.email,
-      subject: `New Message from ${sender.firstName}`,
-      html: chatEmailHTML(`${sender.firstName}`, sender.avatar, messages),
+      email: receiver.personalEmail ? decryptData(receiver.personalEmail) : decryptData(receiver.email),
+      subject: `New Message from ${decryptData(sender.firstName)}`,
+      html: chatEmailHTML(`${decryptData(sender.firstName)}`, sender.avatar, messages),
     });
 
     res.status(200).json({ message: "Sent email successfully!" });

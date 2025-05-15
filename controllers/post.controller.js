@@ -91,7 +91,7 @@ export const getDiscussionsView = async (req, res) => {
         let lastName = decryptData(discussion.user.split(" ")[1]);
         return {
           ...discussion,
-          user: firstName + lastName,
+          user: firstName +' ' + lastName,
         };
       } catch (decryptError) {
         console.error(`Decryption failed for user ID ${discussion.id}:`, decryptError);
