@@ -20,6 +20,7 @@ export const encryptData = (data) => {
 
 // AES Decryption
 export const decryptData = (encryptedData) => {
+  if(!encryptedData) return null;
   const decrypted = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY, {
     iv: FIXED_IV,
     mode: CryptoJS.mode.CBC,
