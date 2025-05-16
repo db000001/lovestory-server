@@ -337,6 +337,7 @@ export const getCategoriesGroupedByRow = async (req, res) => {
           description: category.description,
           categoryOrder: category.categoryOrder,
           fileUrl: fileMap[category.fileId] || null,
+          categoryVisibility: category.categoryVisibility
         });
       } else {
         // Group by row
@@ -350,6 +351,7 @@ export const getCategoriesGroupedByRow = async (req, res) => {
           description: category.description,
           categoryOrder: category.categoryOrder,
           fileUrl: fileMap[category.fileId] || null,
+          categoryVisibility: category.categoryVisibility
         });
       }
     });
