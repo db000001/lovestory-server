@@ -738,7 +738,7 @@ export const getMatchedUserById = async (req, res) => {
       );
       // Combine user data with match data
       return res.status(200).json({
-        decryptedUser,
+        user: decryptedUser,
         match: {
           ...match,
           expTimeLeft: matchExpiration - new Date(),
@@ -750,7 +750,7 @@ export const getMatchedUserById = async (req, res) => {
     );
     // Combine user data with match data
     return res.status(200).json({
-      decryptedUser,
+      user: decryptedUser,
       match: {
         ...match,
         expTimeLeft: matchExpiration - new Date(),
