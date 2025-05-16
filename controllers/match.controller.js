@@ -170,6 +170,10 @@ export const getMatchesView = async (req, res) => {
           },
         });
 
+        if (!user1 || !user2) {
+          return;
+        }
+
         // Return a new object with the likes property added
         return {
           ...match,
