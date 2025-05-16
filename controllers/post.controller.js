@@ -117,11 +117,28 @@ export const getDiscussionsByCategoryId = async (req, res) => {
       where: { categoryId: Number(categoryId) },
     });
 
+    const decryptedDiscussions = discussions.map((discussion) => {
+      try {
+        let firstName = decryptData(discussion.user.split(" ")[0]);
+        let lastName = decryptData(discussion.user.split(" ")[1]);
+        return {
+          ...discussion,
+          user: firstName +' ' + lastName,
+        };
+      } catch (decryptError) {
+        console.error(`Decryption failed for user ID ${discussion.id}:`, decryptError);
+        return {
+          ...discussion,
+          user: "[DECRYPTION FAILED]",
+        };
+      }
+    });
+
     // if (!discussions) {
     //   return res.status(404).json({ message: "Discussions not found" });
     // }
 
-    res.status(200).json(discussions);
+    res.status(200).json(decryptedDiscussions);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

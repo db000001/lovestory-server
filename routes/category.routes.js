@@ -7,6 +7,7 @@ import {
   getAllCategories,
   getCategoriesGroupedByRow,
   getCategoriesView,
+  getCategoriesVisibility,
   getCategoryById,
   toggleCategoryStatus,
   updateCategory,
@@ -21,6 +22,7 @@ categoryRouter.put("/:categoryId", updateCategory);
 categoryRouter.get("/", getAllCategories); // Get all Categories
 categoryRouter.get("/grouped-by-row/:userId", getCategoriesGroupedByRow); // Get all Categories grouped
 categoryRouter.get("/view", getCategoriesView); // Get all Categories View
+categoryRouter.get("/visibility", getCategoriesVisibility); // Get all Categories View
 categoryRouter.get("/:id", getCategoryById); // Get a single Category by ID
 categoryRouter.delete("/:id", deleteCategory); // Delete a Category by ID
 categoryRouter.patch('/:categoryId/status', toggleCategoryStatus); // Route to toggle category status

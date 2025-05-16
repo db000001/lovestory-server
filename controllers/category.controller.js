@@ -220,6 +220,18 @@ export const getCategoriesView = async (req, res) => {
   }
 };
 
+// Get all Categories along with their related CategoryVisibility records
+export const getCategoriesVisibility = async (req, res) => {
+  try {
+    // Fetch all categories visibility
+    const categoriesVisibility = await prisma.categoryVisibility.findMany();
+
+    res.status(200).json(categoriesVisibility);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+
 // Toggle status for a specific category
 export const toggleCategoryStatus = async (req, res) => {
   const { categoryId } = req.params;
@@ -259,9 +271,24 @@ export const getCategoriesGroupedByRow = async (req, res) => {
     // Fetch all categories
     const categories = await prisma.category.findMany();
 
+    // Fetch all related CategoryVisibility records
+    const allVisibilityRecords = await prisma.categoryVisibility.findMany();
+
+    // Combine categories with their visibility records
+    const categoriesWithVisibility = categories.map((category) => {
+      // Filter visibility records for the current category
+      const visibilityRecords = allVisibilityRecords.filter(
+        (vis) => vis.categoryId === category.id
+      );
+      return {
+        ...category,
+        categoryVisibility: visibilityRecords,
+      };
+    });
+
     // Fetch all files that correspond to the categories
-    const fileIds = categories
-      .filter((category) => category.fileId !== null) // Filter out categories without a fileId
+    const fileIds = categoriesWithVisibility
+      .filter((category) => category.fileId !== null) // Filter out categoriesWithVisibility without a fileId
       .map((category) => category.fileId);
 
     let files = [];
@@ -283,7 +310,7 @@ export const getCategoriesGroupedByRow = async (req, res) => {
       return acc;
     }, {});
 
-    // Fetch favorite categories for the user
+    // Fetch favorite categoriesWithVisibility for the user
     const favoriteCategories = await prisma.userFavoCategory.findMany({
       where: { userId: Number(userId) }, // Ensure userId is a number
       select: { categoryId: true }, // Get only the categoryId
@@ -297,11 +324,11 @@ export const getCategoriesGroupedByRow = async (req, res) => {
     // Initialize the result object
     const groupedCategories = {
       Favourite: [], // For favorites
-      rows: {}, // For categories grouped by row
+      rows: {}, // For categoriesWithVisibility grouped by row
     };
 
-    // Group categories by row
-    categories.forEach((category) => {
+    // Group categoriesWithVisibility by row
+    categoriesWithVisibility.forEach((category) => {
       // Handle favorite categories
       if (favoriteCategoryIds.has(category.id)) {
         groupedCategories.Favourite.push({
@@ -339,12 +366,12 @@ export const getCategoriesGroupedByRow = async (req, res) => {
     }
 
     // Add other categories grouped by row
-    for (const [rowTitle, categories] of Object.entries(
+    for (const [rowTitle, categoriesWithVisibility] of Object.entries(
       groupedCategories.rows
     )) {
       responseArray.push({
         title: rowTitle,
-        categories: categories,
+        categories: categoriesWithVisibility,
       });
     }
 

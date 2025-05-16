@@ -295,7 +295,6 @@ export const getMatchedUsersByUserId = async (req, res) => {
         };
       }
     });
-    console.log("decryptedMatchedUsers =>", decryptedMatchedUsers);
 
     // Calculate average ratings for each matched user based on their review posts targeting the user's userId
     const usersWithRatingsAndStatuses = await Promise.all(
