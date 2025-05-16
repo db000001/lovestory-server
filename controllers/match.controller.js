@@ -216,15 +216,15 @@ export const getMatchedUsersByUserId = async (req, res) => {
       select: { id: true, email: true }, // Only fetch the email field
     });
 
-    const decryptedUser = {
-      ...user,
-      email: user.email ? decryptData(user.email) : null,
-    };
-
     // If user doesn't exist, return a 404 error
     if (!user) {
       return res.status(404).json({ error: "User not found." });
     }
+
+    const decryptedUser = {
+      ...user,
+      email: user.email ? decryptData(user.email) : null,
+    };
 
     // Get the current date for expiration check
     const currentDate = new Date();
@@ -232,7 +232,7 @@ export const getMatchedUsersByUserId = async (req, res) => {
     // Find matches associated with the user's email
     const matches = await prisma.match.findMany({
       where: {
-        OR: [{ email1: user.email }, { email2: user.email }],
+        OR: [{ email1: decryptedUser.email }, { email2: decryptedUser.email }],
       },
     });
 
@@ -257,7 +257,7 @@ export const getMatchedUsersByUserId = async (req, res) => {
     const matchedUsers = await prisma.user.findMany({
       where: {
         email: {
-          in: matchedUsersData.map((data) => data.email),
+          in: matchedUsersData.map((data) => encryptData(data.email)),
         },
       },
       select: {
@@ -295,6 +295,7 @@ export const getMatchedUsersByUserId = async (req, res) => {
         };
       }
     });
+    console.log("decryptedMatchedUsers =>", decryptedMatchedUsers);
 
     // Calculate average ratings for each matched user based on their review posts targeting the user's userId
     const usersWithRatingsAndStatuses = await Promise.all(
