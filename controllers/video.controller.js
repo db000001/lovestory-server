@@ -148,7 +148,21 @@ export const getVideosViewByCollection = async (req, res) => {
 export const getVideosDetailView = async (req, res) => {
   try {
     const videos = await prisma.videosDetailView.findMany();
-    return res.status(200).json(videos);
+    // Fetch all related CategoryVisibility records
+    const allVisibilityRecords = await prisma.collectionVisibility.findMany();
+
+    // Combine videos with their visibility records
+    const videosWithVisibility = videos.map((video) => {
+      // Filter visibility records for the current video
+      const visibilityRecords = allVisibilityRecords.filter(
+        (vis) => vis.collectionId === video.collectionId
+      );
+      return {
+        ...video,
+        collectionVisibility: visibilityRecords,
+      };
+    });
+    return res.status(200).json(videosWithVisibility);
   } catch (error) {
     return res.status(500).json({
       message: "Error fetching video or related comments",
@@ -178,6 +192,21 @@ export const getVideoDetailsWithStructured = async (req, res) => {
       },
     });
 
+    // Fetch all related CategoryVisibility records
+    const allVisibilityRecords = await prisma.collectionVisibility.findMany();
+
+    // Combine videos with their visibility records
+    const videosWithVisibility = videos.map((video) => {
+      // Filter visibility records for the current video
+      const visibilityRecords = allVisibilityRecords.filter(
+        (vis) => vis.collectionId === video.collectionId
+      );
+      return {
+        ...video,
+        collectionVisibility: visibilityRecords,
+      };
+    });
+
     // Fetching collections
     const collections = await prisma.collection.findMany({
       select: {
@@ -188,11 +217,11 @@ export const getVideoDetailsWithStructured = async (req, res) => {
     });
 
     // Fetching image and video file URLs for the videos
-    const imageFileIds = videos
+    const imageFileIds = videosWithVisibility
       .map((video) => video.imageFileId)
       .filter((id) => id !== null);
 
-    const videoFileIds = videos
+    const videoFileIds = videosWithVisibility
       .map((video) => video.videoFileId)
       .filter((id) => id !== null);
 
@@ -230,7 +259,7 @@ export const getVideoDetailsWithStructured = async (req, res) => {
     }, {});
 
     // Adding collection names to recent and popular videos
-    const recentVideos = videos
+    const recentVideos = videosWithVisibility
       .map((video) => {
         const collection = collections.find((c) => c.id === video.collectionId);
         return {
@@ -246,7 +275,7 @@ export const getVideoDetailsWithStructured = async (req, res) => {
       })
       .sort((a, b) => b.createdAt - a.createdAt); // Sort by creation date, descending
 
-    const popularVideos = videos
+    const popularVideos = videosWithVisibility
       .map((video) => {
         const collection = collections.find((c) => c.id === video.collectionId);
         return {
@@ -266,7 +295,7 @@ export const getVideoDetailsWithStructured = async (req, res) => {
     const videosByCollection = collections
       .map((collection) => ({
         title: collection.name,
-        videos: videos
+        videos: videosWithVisibility
           .filter((video) => video.collectionId === collection.id)
           .map((video) => ({
             ...video,
