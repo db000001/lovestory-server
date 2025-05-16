@@ -96,6 +96,18 @@ export const updateCategory = async (req, res) => {
       },
     });
 
+    if (visibilityValues.length === 0) {
+      // First, delete any existing visibility records not in the update
+      const existingVisibilityList = await prisma.categoryVisibility.findMany({
+        where: { categoryId: updatedCategory.id },
+      });
+      const existingVisibilityIds = existingVisibilityList.map((vis) => vis.id);
+      // Delete any visibility records that are not present in the request
+      await prisma.categoryVisibility.deleteMany({
+        where: { id: { in: existingVisibilityIds } },
+      });
+    }
+
     // If visibilityValues were provided, update them as well
     if (visibilityValues && visibilityValues.length > 0) {
       const visibilityData = visibilityValues.map((value) => ({
