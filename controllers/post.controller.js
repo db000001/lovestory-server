@@ -225,7 +225,7 @@ export const getDiscussionDetails = async (req, res) => {
 
     const allVisibilityRecords = await prisma.categoryVisibility.findMany();
 
-    categories.map((category) => {
+    const categoriesWithVisibility =  categories.map((category) => {
       // Filter visibility records for the current category
       const visibilityRecords = allVisibilityRecords.filter(
         (vis) => vis.categoryId === category.id
@@ -310,7 +310,7 @@ export const getDiscussionDetails = async (req, res) => {
     // Combining the results
     const result = discussionPosts.map((post) => {
       const user = decryptedUsers.find((u) => u.id === post.userId);
-      const category = categories.find((c) => c.id === post.targetId);
+      const category = categoriesWithVisibility.find((c) => c.id === post.targetId);
       const replyCount = repliesCountMap[post.id] || 0; // Get reply count or default to 0
       const imageUrl = post.imageFileId ? imageFileMap[post.imageFileId] : null;
       const emotions = emotionsMap[post.id] || {
