@@ -223,6 +223,19 @@ export const getDiscussionDetails = async (req, res) => {
       },
     });
 
+    const allVisibilityRecords = await prisma.categoryVisibility.findMany();
+
+    categories.map((category) => {
+      // Filter visibility records for the current category
+      const visibilityRecords = allVisibilityRecords.filter(
+        (vis) => vis.categoryId === category.id
+      );
+      return {
+        ...category,
+        categoryVisibility: visibilityRecords,
+      };
+    });
+
     // Fetching user emotions for each discussion post
     const postIds = discussionPosts.map((post) => post.id);
     const userEmotions = await prisma.userPostEmotion.findMany({
