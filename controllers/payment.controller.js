@@ -369,9 +369,9 @@ export const shareRevenue = async (req, res) => {
 
     await sendEmail({
       email: decryptData(user.personalEmail) ? decryptData(user.personalEmail) : decryptData(user.email),
-      subject: `${revenueUser.firstName} ${age} Information Purchase`,
+      subject: `${decryptData(revenueUser.firstName)} ${age} Information Purchase`,
       html: informationPurchaseEmailHTML(
-        `${revenueUser.firstName}`,
+        `${decryptData(revenueUser.firstName)}`,
         age,
         purchasedQuestions,
         revenueQuestions
