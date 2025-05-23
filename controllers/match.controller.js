@@ -400,6 +400,7 @@ export const updateMatchStatus = async (req, res) => {
       lastName: user.lastName ? decryptData(user.lastName) : null,
       middleName: user.middleName ? decryptData(user.middleName) : null,
       email: user.email ? decryptData(user.email) : null,
+      personalEmail: user.personalEmail ? decryptData(user.personalEmail) : null,
     };
 
     // Check if the user exists
@@ -420,6 +421,7 @@ export const updateMatchStatus = async (req, res) => {
       lastName: matchedUser.lastName ? decryptData(matchedUser.lastName) : null,
       middleName: matchedUser.middleName ? decryptData(matchedUser.middleName) : null,
       email: matchedUser.email ? decryptData(matchedUser.email) : null,
+      personalEmail: matchedUser.personalEmail ? decryptData(matchedUser.personalEmail) : null,
     };
 
     // Check if the matched user exists
@@ -511,6 +513,7 @@ export const updateMatchStatus = async (req, res) => {
           matchingAction: "rejected"
         },
       });
+      console.log("decryptedMatchedUser =>", decryptedMatchedUser);
       await sendEmail({
         email: decryptedMatchedUser.personalEmail
           ? decryptedMatchedUser.personalEmail
