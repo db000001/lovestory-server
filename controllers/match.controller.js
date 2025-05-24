@@ -513,7 +513,6 @@ export const updateMatchStatus = async (req, res) => {
           matchingAction: "rejected"
         },
       });
-      console.log("decryptedMatchedUser =>", decryptedMatchedUser);
       await sendEmail({
         email: decryptedMatchedUser.personalEmail
           ? decryptedMatchedUser.personalEmail

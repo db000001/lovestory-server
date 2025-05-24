@@ -1947,6 +1947,8 @@ export const sendUserChatNotificationEmail = async (req, res) => {
       return res.status(200).json({ message: "Receiver notification off." });
     }
 
+    console.log("Email ->", receiver.personalEmail, receiver.email);
+
     await sendEmail({
       email: receiver.personalEmail ? decryptData(receiver.personalEmail) : decryptData(receiver.email),
       subject: `New Message from ${decryptData(sender.firstName)}`,
