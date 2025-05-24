@@ -38,8 +38,8 @@ app.use(morgan("dev"));
 passport.use(passportJWTStrategy);
 
 app.use("/api/test", async (req, res) => {
-  const encryptedEmail = encryptData("Doe");
-  const decryptedEmail = decryptData(encryptedEmail);
+  const encryptedEmail = encryptData("");
+  const decryptedEmail = decryptData("tVIs1T89WnKMXFMUdO/BUA==");
   console.log("encryptedEmail", encryptedEmail);
   console.log("decryptedEmail", decryptedEmail);
   res.status(200).json({ message: "Success!" });
