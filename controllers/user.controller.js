@@ -1947,15 +1947,11 @@ export const sendUserChatNotificationEmail = async (req, res) => {
       return res.status(200).json({ message: "Receiver notification off." });
     }
 
-    console.log("Email0 ->", receiver.personalEmail);
-    console.log("Email1 ->", decryptData(receiver.personalEmail));
-    console.log("Email2 ->", decryptData(receiver.email));
-
-    // await sendEmail({
-    //   email: receiver.personalEmail ? decryptData(receiver.personalEmail) : decryptData(receiver.email),
-    //   subject: `New Message from ${decryptData(sender.firstName)}`,
-    //   html: chatEmailHTML(`${decryptData(sender.firstName)}`, sender.avatar, messages),
-    // });
+    await sendEmail({
+      email: receiver.personalEmail ? decryptData(receiver.personalEmail) : decryptData(receiver.email),
+      subject: `New Message from ${decryptData(sender.firstName)}`,
+      html: chatEmailHTML(`${decryptData(sender.firstName)}`, sender.avatar, messages),
+    });
 
     res.status(200).json({ message: "Sent email successfully!" });
   } catch (error) {
