@@ -1948,7 +1948,7 @@ export const sendUserChatNotificationEmail = async (req, res) => {
     }
 
     await sendEmail({
-      email: receiver.personalEmail ? decryptData(receiver.personalEmail) : decryptData(receiver.email),
+      email: receiver.email ? decryptData(receiver.email) : decryptData(receiver.personalEmail),
       subject: `New Message from ${decryptData(sender.firstName)}`,
       html: chatEmailHTML(`${decryptData(sender.firstName)}`, sender.avatar, messages),
     });
